@@ -1,12 +1,12 @@
-# Firecrawl Web Examples Repository
+# Firecrawl App Examples Repository
 
-This repository contains example web applications developed using Firecrawl. These examples demonstrate various implementations and use cases for Firecrawl in web development.
+This repository contains example applications developed using Firecrawl. These examples demonstrate various implementations and use cases for Firecrawl.
 
 ## Contents
 
 The repository currently includes the following example projects:
 
-1. **local-website-chatbot**: An example of implementing a chatbot for a local website.
+1. **local-website-chatbot**: An example of implementing a local chatbot for any website.
 2. **roastmywebsite-example-app**: A sample application demonstrating website critique functionality.
 
 ## Getting Started

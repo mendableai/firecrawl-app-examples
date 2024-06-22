@@ -16,7 +16,3 @@ To explore these examples:
 1. Clone this repository to your local machine.
 2. Navigate to the specific example directory you're interested in.
 3. Follow the README instructions within each project directory for setup and running the application.
-
----
-
-Note: This README provides a basic structure. You may want to expand on each section with more detailed information about Firecrawl, specific setup instructions, or any other relevant details about the examples.

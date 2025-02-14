@@ -1,0 +1,27 @@
+.env
+*-docs
+
+# Python-project related files
+*.pyc
+*.pyo
+*.pyd
+*.pyx
+*.pyx
+*.pyx
+*.pyx
+__pycache__
+
+# IDE-related files
+.idea
+.venv
+data
+
+# Database-related files
+*.db
+*.sqlite
+*.sqlite3
+*.db.sqlite
+*.db.sqlite3
+*.db.sqlite
+*.db.sqlite3
+chroma_db

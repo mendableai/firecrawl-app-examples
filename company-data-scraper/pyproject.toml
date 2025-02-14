@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "crunchbase-scraper"
+name = "company-data-scraper"
 version = "0.1.0"
 description = ""
 authors = ["BexTuychiev <bex@ibexprogramming.com>"]

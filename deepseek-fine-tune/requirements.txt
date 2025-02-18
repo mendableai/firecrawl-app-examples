@@ -1,0 +1,16 @@
+# Core training dependencies
+unsloth
+torch
+transformers
+accelerate
+bitsandbytes
+trl
+
+# Dataset handling
+datasets
+
+# Training monitoring
+wandb
+
+# HuggingFace utilities
+huggingface-hub

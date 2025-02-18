@@ -1,0 +1,15 @@
+# Core dependencies
+python-dotenv
+pydantic
+
+# Hugging Face
+datasets
+huggingface-hub
+
+# LangChain
+langchain
+langchain_openai
+
+# Web scraping
+firecrawl-py
+aiohttp

@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "logo-tree-builder"
+version = "0.1.0"
+description = ""
+authors = ["BexTuychiev <bex@ibexprogramming.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+firecrawl-py = "^1.13.5"
+streamlit = "^1.43.0"
+pyvis = "^0.3.2"
+networkx = "^3.4.2"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

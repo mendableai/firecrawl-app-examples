@@ -786,7 +786,18 @@ async def main():
 
     # Check if API key is provided
     if not os.getenv("FIRECRAWL_API_KEY"):
-        st.warning("Please enter your Firecrawl API key in the sidebar to continue.")
+        st.markdown("""
+            <div style="
+                padding: 0.75rem; 
+                background-color: #fff3cd;
+                border: 1px solid #ffeeba;
+                border-radius: 0.25rem;
+                color: #1f1f1f;
+                font-weight: 500;
+                margin-bottom: 1rem;">
+                ⚠️ Please enter your Firecrawl API key in the sidebar to continue.
+            </div>
+        """, unsafe_allow_html=True)
         return
 
     if analyze_button and resume_url:

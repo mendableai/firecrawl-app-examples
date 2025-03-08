@@ -2,6 +2,7 @@ import sys
 import os
 import asyncio
 import time
+from urllib.parse import urlparse
 
 # Add the src directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,10 +23,44 @@ class ClientTreeBuilder:
         self.start_time = None
 
     def normalize_url(self, url):
-        """Ensure URL has a scheme."""
-        if url and not url.startswith(("http://", "https://")):
-            return "https://" + url
-        return url
+        """
+        Normalize a URL to ensure consistent comparison.
+
+        Handles variations like:
+        - Adding scheme if missing
+        - Normalizes domain with or without www
+        - Removes trailing slash
+        """
+        if not url:
+            return url
+
+        # Add scheme if missing
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+
+        # Parse the URL
+        parsed_url = urlparse(url)
+
+        # Normalize domain (remove www. if present)
+        netloc = parsed_url.netloc
+        if netloc.startswith("www."):
+            netloc = netloc[4:]
+
+        # Rebuild the URL with normalized domain and without trailing slash
+        path = parsed_url.path
+        if path.endswith("/"):
+            path = path[:-1]
+
+        # Rebuild the URL
+        normalized = f"{parsed_url.scheme}://{netloc}{path}"
+
+        # Add query and fragment if they exist
+        if parsed_url.query:
+            normalized += f"?{parsed_url.query}"
+        if parsed_url.fragment:
+            normalized += f"#{parsed_url.fragment}"
+
+        return normalized
 
     async def build_tree(self, root_url, max_depth=2):
         """

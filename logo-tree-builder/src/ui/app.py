@@ -43,6 +43,17 @@ class ClientTreeApp:
         """
         )
 
+        st.warning(
+            """
+            **Disclaimer about URL structures:**  
+            Different websites use different URL structures for client references. For example:
+            - Platforms like Hugging Face use path-based URLs (huggingface.co/client)
+            - Others use direct domain links (client.com)
+            
+            These differences may cause duplicate node labels or cyclical connections in the visualization.
+            """
+        )
+
         # Create side-by-side input fields for API key and website URL
         col1, col2 = st.columns([2, 1])  # 2/3 for API key, 1/3 for website URL
 

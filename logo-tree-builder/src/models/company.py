@@ -33,6 +33,7 @@ class Company:
             "name": self.name,
             "website_url": self.website_url,
             "clients": [client.to_dict() for client in self.clients],
+            "disclaimer": "Note: Different websites use different URL structures for client references. For example, platforms like Hugging Face (huggingface.co/client) use path-based URLs, while others use direct domain links (client.com). This may cause duplicate node labels or cyclical connections in the visualization.",
         }
 
     def to_json(self, indent=2):

@@ -12,7 +12,7 @@ load_dotenv()
 
 # Set page configuration and theme
 st.set_page_config(
-    page_title="Resume Job Matcher",
+    page_title="Job Matcher AI",
     page_icon="🔥",
     layout="wide",
 )

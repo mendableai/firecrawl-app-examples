@@ -4,8 +4,6 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from .scraper import JobScraper
 from .matcher import JobMatcher
-from .discord import DiscordNotifier
-from .database import Database
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,24 +14,27 @@ class JobScheduler:
     def __init__(self):
         self.scraper = JobScraper()
         self.matcher = JobMatcher()
-        self.notifier = DiscordNotifier()
-        self.db = Database()
         self.resume_url = os.getenv("RESUME_URL")
         self.check_interval = int(os.getenv("CHECK_INTERVAL_MINUTES", "15"))
         self.processed_jobs = set()
+        self.job_urls = []
+        
+        # Add job URLs here or load from a file
+        # Example: self.job_urls = ["https://example.com/job1", "https://example.com/job2"]
+        
         logger.info(f"Initialized scheduler with {self.check_interval} minute interval")
 
-    async def process_source(self, source):
-        """Process a single job source"""
+    async def process_job_url(self, job_url):
+        """Process a single job URL"""
         try:
-            logger.info(f"Processing source: {source.url}")
+            logger.info(f"Processing job URL: {job_url}")
 
             # Parse resume
             resume_content = await self.scraper.parse_resume(self.resume_url)
 
-            # Get jobs from source
-            jobs = await self.scraper.scrape_job_postings([source.url])
-            logger.info(f"Found {len(jobs)} jobs from {source.url}")
+            # Get jobs from URL
+            jobs = await self.scraper.scrape_job_postings([job_url])
+            logger.info(f"Found {len(jobs)} jobs from {job_url}")
 
             # Process new jobs
             for job in jobs:
@@ -46,39 +47,31 @@ class JobScheduler:
 
                 if result["is_match"]:
                     logger.info(f"Found match: {job.title} at {job.company}")
-                    await self.notifier.send_match(job, result["reason"])
+                    # Match found, but no notification sent (Discord removed)
 
                 self.processed_jobs.add(job.url)
 
-            # Update last checked timestamp
-            self.db.update_last_checked(source.url)
-
         except Exception as e:
-            logger.error(f"Error processing source {source.url}: {str(e)}")
+            logger.error(f"Error processing job URL {job_url}: {str(e)}")
 
     async def run(self):
         """Main scheduling loop"""
         logger.info("Starting job scheduler...")
+        
+        if not self.job_urls:
+            logger.warning("No job URLs configured. Please add some job URLs to the scheduler.")
+            return
 
         while True:
             try:
-                sources = self.db.get_job_sources()
-                logger.info(f"Found {len(sources)} job sources")
+                logger.info(f"Found {len(self.job_urls)} job URLs to process")
 
-                for source in sources:
-                    if not source.last_checked or (
-                        datetime.utcnow() - source.last_checked
-                        > timedelta(minutes=self.check_interval)
-                    ):
-                        logger.info(f"Processing source {source.url}")
-                        await self.process_source(source)
-                    else:
-                        logger.debug(
-                            f"Skipping {source.url}, next check in "
-                            f"{(source.last_checked + timedelta(minutes=self.check_interval) - datetime.utcnow()).total_seconds() / 60:.1f} minutes"
-                        )
+                for job_url in self.job_urls:
+                    logger.info(f"Processing job URL {job_url}")
+                    await self.process_job_url(job_url)
 
-                await asyncio.sleep(60)  # Check every minute
+                logger.info(f"Sleeping for {self.check_interval} minutes")
+                await asyncio.sleep(self.check_interval * 60)  # Sleep for the configured interval
 
             except Exception as e:
                 logger.error(f"Scheduler error: {str(e)}")

@@ -4,8 +4,7 @@ from dotenv import load_dotenv
 import os
 from src.scraper import JobScraper
 from src.matcher import JobMatcher
-from src.discord import DiscordNotifier
-from src.database import Database
+from src.pdf_processor import PDFProcessor
 from firecrawl import FirecrawlApp
 
 # Load environment variables but we'll override FIRECRAWL_API_KEY with user input
@@ -561,20 +560,60 @@ st.markdown("""
     a:hover {
         text-decoration: underline !important;
     }
+    
+    /* Details section styling */
+    .details-section {
+        margin-top: 1rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .details-section h4 {
+        font-size: 1rem !important;
+        margin-top: 0.8rem !important;
+        margin-bottom: 0.4rem !important;
+        color: var(--accent-color) !important;
+    }
+    
+    .details-section ul {
+        margin-top: 0.3rem;
+        margin-bottom: 0.8rem;
+        padding-left: 1.5rem;
+    }
+    
+    .details-section li {
+        margin-bottom: 0.3rem;
+        line-height: 1.4;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 
-async def process_job(scraper, matcher, notifier, job, resume_content):
+async def process_job(scraper, matcher, job, resume_content):
     """Process a single job posting"""
-    job_content = await scraper.scrape_job_content(job.url)
-    result = await matcher.evaluate_match(resume_content, job_content)
-    
-    # Update is_match based on match_score threshold (50%)
-    result["is_match"] = result["is_match"] and int(result["match_score"]) >= 50
-    
-    if result["is_match"]:
-        await notifier.send_match(job, result["reason"])
+    try:
+        job_content = await scraper.scrape_job_content(job.url)
+        result = await matcher.evaluate_match(resume_content, job_content)
+        
+        # Handle case where match_score is not a number
+        try:
+            int(result["match_score"])
+        except (ValueError, TypeError):
+            result["match_score"] = '0'  # Set to 0 if not a valid number
+            
+        # Update is_match based on match_score threshold (50%)
+        result["is_match"] = result["is_match"] and int(result["match_score"]) >= 50
+        
+    except Exception as e:
+        # Return a default result if an error occurs
+        result = {
+            "is_match": False,
+            "reason": f"Error processing job: {str(e)}",
+            "match_score": "0",
+            "key_strengths": ["N/A"],
+            "missing_skills": ["N/A"],
+            "improvement_suggestions": ["N/A"]
+        }
 
     return job, result
 
@@ -582,6 +621,9 @@ async def process_job(scraper, matcher, notifier, job, resume_content):
 async def main():
     """Main function to run the resume parser application."""
     st.title("Resume Job Matcher")
+    
+    # At the beginning of the main function or before any conditional blocks
+    jobs = []
     
     # API Key input in the sidebar
     with st.sidebar:
@@ -598,6 +640,8 @@ async def main():
         
         # Save API key to environment
         if firecrawl_api_key:
+            # Trim any whitespace from the API key
+            firecrawl_api_key = firecrawl_api_key.strip()
             os.environ["FIRECRAWL_API_KEY"] = firecrawl_api_key
             # Create a container for API key validation messages
             api_key_message = st.empty()
@@ -616,14 +660,18 @@ async def main():
         
         st.divider()
         
-        st.markdown("<h3>Manage Job Sources</h3>", unsafe_allow_html=True)
+        st.markdown("<h3>Manage Job URLs</h3>", unsafe_allow_html=True)
 
-        # Add new job source
-        new_source = st.text_input(
-            "Add Job Source URL", 
-            placeholder="https://www.company.com/jobs",
-            key="new_source_input"
+        # Add new job URL
+        new_url = st.text_input(
+            "Add Job URL", 
+            placeholder="https://www.company.com/jobs/position",
+            key="new_url_input"
         )
+
+        # Create a session state for job URLs if it doesn't exist
+        if 'job_urls' not in st.session_state:
+            st.session_state.job_urls = []
 
         col1, col2 = st.columns([2, 1])
         with col1:
@@ -632,7 +680,7 @@ async def main():
             <script>
             // Function to check input and disable/enable button
             function checkInput() {
-                const input = document.querySelector('input[aria-label="Add Job Source URL"]');
+                const input = document.querySelector('input[aria-label="Add Job URL"]');
                 const button = document.querySelector('button[kind="primary"][data-testid="baseButton-primary"]');
                 
                 if (input && button) {
@@ -655,7 +703,7 @@ async def main():
                 checkInput();
                 
                 // Add event listener to input
-                const input = document.querySelector('input[aria-label="Add Job Source URL"]');
+                const input = document.querySelector('input[aria-label="Add Job URL"]');
                 if (input) {
                     input.addEventListener('input', checkInput);
                 }
@@ -663,109 +711,81 @@ async def main():
             </script>
             """, unsafe_allow_html=True)
             
-            if st.button("Add Source", key="add_source_btn", help="Add this URL to your job sources", use_container_width=True, disabled=(not new_source)):
-                db = Database()
-                db.save_job_source(new_source)
-                st.success("Job source added!")
+            if st.button("Add URL", key="add_url_btn", help="Add this URL to your job list", use_container_width=True, disabled=(not new_url)):
+                if new_url not in st.session_state.job_urls:
+                    st.session_state.job_urls.append(new_url)
+                    st.success("Job URL added!")
+                else:
+                    st.warning("This URL is already in your list.")
 
-        # List and delete existing sources
-        st.markdown("<h4>Current Sources</h4>", unsafe_allow_html=True)
-        db = Database()
-        sources = db.get_job_sources()
+        # List and delete existing URLs
+        st.markdown("<h4>Current Job URLs</h4>", unsafe_allow_html=True)
         
-        if not sources:
-            st.markdown('<p style="font-style: italic; font-size: 0.9rem;">No sources added yet. Add a job source URL above.</p>', unsafe_allow_html=True)
+        if not st.session_state.job_urls:
+            st.markdown('<p style="font-style: italic; font-size: 0.9rem;">No job URLs added yet. Add a job URL above.</p>', unsafe_allow_html=True)
         
-        for source in sources:
+        for i, url in enumerate(st.session_state.job_urls):
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.markdown(f'<div class="source-item">{source.url}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="source-item">{url}</div>', unsafe_allow_html=True)
             with col2:
-                if st.button("Delete", key=f"{source.url}_delete", help="Remove this job source"):
-                    db.delete_job_source(source.url)
+                if st.button("Delete", key=f"{i}_delete", help="Remove this job URL"):
+                    st.session_state.job_urls.remove(url)
                     st.rerun()
         
         st.divider()
         
-        # Resume PDF URL input in sidebar
+        # Resume input section in sidebar
         st.markdown("<h3>Resume Analysis</h3>", unsafe_allow_html=True)
-        st.markdown('<p style="font-weight: 500; margin-bottom: 5px;">Enter Resume PDF URL</p>', unsafe_allow_html=True)
-        resume_url = st.text_input(
-            label="Resume URL",
-            placeholder="https://www.website.com/resume.pdf",
+        
+        # Add radio buttons for input method selection
+        resume_input_method = st.radio(
+            "Resume Input Method",
+            ["File Upload", "URL Input", "Text Input"],
             label_visibility="collapsed",
-            key="resume_url_input"
+            horizontal=True,
+            index=0  # Default to File Upload
         )
         
-        # Add JavaScript to disable the Analyze Resume button when input is empty
-        st.markdown("""
-        <script>
-        // Function to check resume URL input and disable/enable button
-        function checkResumeInput() {
-            const input = document.querySelector('input[aria-label="Resume URL"]');
-            const button = document.querySelector('button:contains("Analyze Resume")');
-            
-            if (input && button) {
-                if (input.value.trim() === '') {
-                    button.disabled = true;
-                    button.style.backgroundColor = '#cccccc';
-                    button.style.color = '#666666';
-                    button.style.cursor = 'not-allowed';
-                } else {
-                    button.disabled = false;
-                    button.style.backgroundColor = '#FF7D00';
-                    button.style.color = 'white';
-                    button.style.cursor = 'pointer';
-                }
-            }
-        }
-        
-        // Set initial state
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                checkResumeInput();
-                
-                // Add event listener to input
-                const input = document.querySelector('input[aria-label="Resume URL"]');
-                if (input) {
-                    input.addEventListener('input', checkResumeInput);
-                }
-                
-                // Fix for button selector
-                if (!document.querySelector('button:contains("Analyze Resume")')) {
-                    const allButtons = document.querySelectorAll('button');
-                    allButtons.forEach(function(btn) {
-                        if (btn.textContent.includes('Analyze Resume')) {
-                            if (document.querySelector('input[aria-label="Resume URL"]').value.trim() === '') {
-                                btn.disabled = true;
-                                btn.style.backgroundColor = '#cccccc';
-                                btn.style.color = '#666666';
-                                btn.style.cursor = 'not-allowed';
-                            }
-                            
-                            document.querySelector('input[aria-label="Resume URL"]').addEventListener('input', function() {
-                                if (this.value.trim() === '') {
-                                    btn.disabled = true;
-                                    btn.style.backgroundColor = '#cccccc';
-                                    btn.style.color = '#666666';
-                                    btn.style.cursor = 'not-allowed';
-                                } else {
-                                    btn.disabled = false;
-                                    btn.style.backgroundColor = '#FF7D00';
-                                    btn.style.color = 'white';
-                                    btn.style.cursor = 'pointer';
-                                }
-                            });
-                        }
-                    });
-                }
-            }, 1000); // Small delay to ensure DOM is fully loaded
-        });
-        </script>
-        """, unsafe_allow_html=True)
-        
-        # Create analyze button in sidebar
-        analyze_button = st.button("Analyze Resume", use_container_width=True, disabled=(not resume_url))
+        # Show the appropriate input method based on selection
+        if resume_input_method == "URL Input":
+            st.markdown('<p style="font-weight: 500; margin-bottom: 5px;">Enter Resume PDF URL</p>', unsafe_allow_html=True)
+            resume_url = st.text_input(
+                label="Resume URL",
+                placeholder="https://www.website.com/resume.pdf",
+                label_visibility="collapsed",
+                key="resume_url_input"
+            )
+            resume_file = None
+            resume_text = None
+        elif resume_input_method == "File Upload":
+            st.markdown('<p style="font-weight: 500; margin-bottom: 5px;">Upload Resume PDF</p>', unsafe_allow_html=True)
+            resume_file = st.file_uploader(
+                "Upload Resume",
+                type=["pdf"],
+                label_visibility="collapsed",
+                key="resume_file_input"
+            )
+            resume_url = ""
+            resume_text = None
+        else:  # Text Input
+            st.markdown('<p style="font-weight: 500; margin-bottom: 5px;">Paste Resume Text</p>', unsafe_allow_html=True)
+            resume_text = st.text_area(
+                label="Resume Text",
+                placeholder="Paste the content of your resume here...",
+                height=300,
+                label_visibility="collapsed",
+                key="resume_text_input"
+            )
+            resume_url = ""
+            resume_file = None
+
+        # Create analyze button in sidebar - enabled if either URL or file is provided
+        analyze_button = st.button(
+            "Analyze Resume", 
+            use_container_width=True, 
+            disabled=(not resume_url and resume_file is None and not resume_text)
+        )
         
     # Main content
     st.markdown(
@@ -774,11 +794,11 @@ async def main():
         <h3 style="margin-top: 0;">How It Works</h3>
         <p>This app helps you find matching jobs by:</p>
         <ul>
-            <li>Analyzing your resume from a PDF URL</li>
+            <li>Analyzing your resume from a PDF file or URL</li>
             <li>Scraping job postings from your saved job sources</li>
             <li>Using AI to evaluate if you're a good fit for each position</li>
         </ul>
-        <p>Simply paste your resume URL in the sidebar to get started!</p>
+        <p>Simply upload your resume PDF in the sidebar to get started!</p>
     </div>
     """,
         unsafe_allow_html=True
@@ -800,34 +820,41 @@ async def main():
         """, unsafe_allow_html=True)
         return
 
-    if analyze_button and resume_url:
+    if analyze_button and (resume_url or resume_file or resume_text):
         try:
             # Initialize services
             scraper = JobScraper()
             matcher = JobMatcher()
-            notifier = DiscordNotifier()
-            db = Database()
             
             with st.spinner("Parsing resume..."):
-                resume_content = await scraper.parse_resume(resume_url)
+                if resume_url:
+                    resume_content = await scraper.parse_resume(resume_url)
+                elif resume_file:
+                    # Process uploaded PDF file
+                    pdf_processor = PDFProcessor()
+                    resume_content = pdf_processor.extract_text_from_pdf(resume_file)
+                else:
+                    # Use the pasted text directly
+                    resume_content = resume_text
 
-            # Get job sources from database
-            sources = db.get_job_sources()
-            if not sources:
-                st.warning("No job sources configured. Add some in the sidebar!")
+            # Get job URLs from session state
+            job_urls = st.session_state.job_urls
+            if not job_urls:
+                st.warning("No job URLs provided. Please add some in the sidebar!")
                 return
 
             with st.spinner("Scraping job postings..."):
-                jobs = await scraper.scrape_job_postings([s.url for s in sources])
+                jobs = await scraper.scrape_job_postings(job_urls)
 
             if not jobs:
-                st.warning("No jobs found in the configured sources.")
+                st.warning("No jobs found in the provided URLs.")
                 return
 
             with st.spinner(f"Analyzing {len(jobs)} jobs..."):
                 tasks = []
                 for job in jobs:
-                    task = process_job(scraper, matcher, notifier, job, resume_content)
+                    # Remove notifier from process_job call
+                    task = process_job(scraper, matcher, job, resume_content)
                     tasks.append(task)
 
                 # Create a container for results with custom styling
@@ -839,6 +866,11 @@ async def main():
                     job_results = []
                     for coro in asyncio.as_completed(tasks):
                         job, result = await coro
+                        # Handle case where match_score is not a number
+                        try:
+                            int(result["match_score"])
+                        except (ValueError, TypeError):
+                            result["match_score"] = '0'  # Set to 0 if not a valid number
                         job_results.append((job, result))
                     
                     # Sort job results by match score (high to low)
@@ -866,13 +898,61 @@ async def main():
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
+                            
+                            # Add details section using Streamlit components
+                            with st.expander("**Details**", expanded=True):
+                                st.markdown("#### Key Strengths:")
+                                
+                                # Process key strengths
+                                strengths = (
+                                    [''.join(result["key_strengths"])] if all(len(s) == 1 for s in result["key_strengths"]) 
+                                    else result["key_strengths"]
+                                )
+                                if any(strength != "N/A" for strength in result["key_strengths"]):
+                                    for strength in strengths:
+                                        if strength != "N/A":
+                                            st.markdown(f"• {strength}")
+                                else:
+                                    st.markdown("No specific strengths identified")
+                                
+                                st.markdown("#### Areas for Improvement:")
+                                
+                                # Process missing skills
+                                missing_skills = (
+                                    [''.join(result["missing_skills"])] if all(len(s) == 1 for s in result["missing_skills"]) 
+                                    else result["missing_skills"]
+                                )
+                                if any(skill != "N/A" for skill in result["missing_skills"]):
+                                    for skill in missing_skills:
+                                        if skill != "N/A":
+                                            st.markdown(f"• {skill}")
+                                else:
+                                    st.markdown("No specific areas identified")
+                                
+                                st.markdown("#### Suggestions:")
+                                
+                                # Process suggestions
+                                suggestions = (
+                                    [''.join(result.get("improvement_suggestions", ["N/A"]))] 
+                                    if result.get("improvement_suggestions") and all(len(s) == 1 for s in result.get("improvement_suggestions", ["N/A"])) 
+                                    else result.get("improvement_suggestions", ["N/A"])
+                                )
+                                if any(suggestion != "N/A" for suggestion in result.get("improvement_suggestions", ["N/A"])):
+                                    for suggestion in suggestions:
+                                        if suggestion != "N/A":
+                                            st.markdown(f"• {suggestion}")
+                                else:
+                                    st.markdown("No specific suggestions available")
         except Exception as e:
             if "API key" in str(e) or "authentication" in str(e).lower() or "unauthorized" in str(e).lower():
                 st.markdown('<div class="error-message" style="padding: 10px; margin-bottom: 16px;">❌ Invalid API key. Please check your Firecrawl API key in the sidebar and try again.</div>', unsafe_allow_html=True)
             else:
                 st.markdown(f'<div class="error-message" style="padding: 10px; margin-bottom: 16px;">❌ An error occurred: {str(e)}</div>', unsafe_allow_html=True)
 
-        st.success(f"Analysis complete! Processed {len(jobs)} jobs.")
+        if 'jobs' in locals():
+            st.success(f"Analysis complete! Processed {len(jobs)} jobs.")
+        else:
+            st.success("Analysis complete!")
 
 
 if __name__ == "__main__":

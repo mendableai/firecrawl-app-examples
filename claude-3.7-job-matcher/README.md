@@ -1,22 +1,18 @@
 # AI Resume Job Matcher
 
-An intelligent job matching system that automatically analyzes job postings against your resume using AI, with real-time notifications for matching positions.
+An intelligent job matching system that automatically analyzes job postings against your resume using AI.
 
 ## Features
 
 - 🤖 AI-powered job matching using Claude 3 Sonnet
 - 🔍 Automated job posting scraping
 - 📄 Resume PDF parsing
-- 💬 Discord notifications for matching jobs
 - 🔄 Scheduled job checking
-- 📊 Web interface for managing job sources
-- 🗃️ Persistent storage with Supabase
+- 📊 Web interface for managing job URLs
 
 ## Prerequisites
 
 - Python 3.10+
-- [Supabase](https://supabase.com) account
-- [Discord webhook](https://discord.com/developers/docs/resources/webhook) (for notifications)
 - [Anthropic](https://www.anthropic.com) API key
 - [Firecrawl](https://firecrawl.co) API key
 
@@ -49,22 +45,8 @@ An intelligent job matching system that automatically analyzes job postings agai
    ```bash
    FIRECRAWL_API_KEY=your_firecrawl_key
    ANTHROPIC_API_KEY=your_anthropic_key
-   DISCORD_WEBHOOK_URL=your_discord_webhook_url
    RESUME_URL=your_resume_pdf_url
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_KEY=your_supabase_key
    CHECK_INTERVAL_MINUTES=15
-   ```
-
-5. **Set up Supabase**
-
-   Create a new Supabase project and create the following table:
-
-   ```sql
-   create table job_sources (
-     url text primary key,
-     last_checked timestamp with time zone
-   );
    ```
 
 ## Running Locally
@@ -110,10 +92,9 @@ The project includes a GitHub Actions workflow that runs the job checker on a sc
 - `src/`
   - `scraper.py`: Job and resume parsing logic
   - `matcher.py`: AI-powered job matching
-  - `discord.py`: Discord notification system
-  - `database.py`: Supabase database operations
   - `models.py`: Pydantic data models
   - `scheduler.py`: Automated job checking
+  - `pdf_processor.py`: PDF parsing functionality
 
 ## Contributing
 

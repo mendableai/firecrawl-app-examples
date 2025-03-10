@@ -9,10 +9,5 @@ class Job(BaseModel):
     company: str = Field(description="Company name")
 
 
-class JobSource(BaseModel):
-    url: str = Field(description="URL of the job board")
-    last_checked: Optional[datetime] = Field(description="Last check timestamp")
-
-
 class JobListings(BaseModel):
     jobs: List[Job] = Field(description="List of job postings")

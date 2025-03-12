@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+
+.env
+.venv
+
+# Notebook-related
+*.ipynb_checkpoints
+

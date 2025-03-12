@@ -20,14 +20,14 @@ A Streamlit application that uses Firecrawl's deep research capabilities to perf
 
 1. Clone this repository:
 
-   ```
-   git clone <repository-url>
-   cd deep-research
+   ```bash
+   git clone https://github.com/mendableai/firecrawl-app-examples.git
+   cd firecrawl-app-examples/deep-research-endpoint
    ```
 
 2. Install the required dependencies:
 
-   ```
+   ```bash
    pip install -r requirements.txt
    ```
 
@@ -35,14 +35,14 @@ A Streamlit application that uses Firecrawl's deep research capabilities to perf
 
 1. Run the Streamlit application:
 
-   ```
+   ```bash
    cd src
    streamlit run app.py
    ```
 
    Or use the provided run script:
 
-   ```
+   ```bash
    python run.py
    ```
 
@@ -65,7 +65,7 @@ A Streamlit application that uses Firecrawl's deep research capabilities to perf
 
 ## Project Structure
 
-```
+```python
 deep-research/
 ├── src/
 │   ├── app.py                # Main Streamlit application
@@ -81,7 +81,7 @@ deep-research/
 
 The application requires the following dependencies:
 
-```
+```python
 streamlit>=1.24.0
 requests>=2.28.0
 firecrawl-py>=0.1.0

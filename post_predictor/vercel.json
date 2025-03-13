@@ -1,0 +1,16 @@
+{
+    "functions": {
+      "src/pages/api/*.js": {
+        "maxDuration": 45 
+      },
+      "src/pages/api/*.ts": {
+        "maxDuration": 45 
+      },
+      "src/app/api/*.ts": {
+        "maxDuration": 45 
+      },
+      "src/app/api/*.js": {
+        "maxDuration": 45 
+      }
+    }
+}

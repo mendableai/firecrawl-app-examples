@@ -22,20 +22,35 @@ def run_app():
     # Initialize session state
     init_session_state()
     
-    # App title and description
+    # App title and description in main content area
     st.title("KnowledgeForge")
-    st.subheader("Transform websites into intelligent agents")
-    st.write("Extract domain knowledge from any website and create specialized AI agents.")
+    st.subheader("Extract domain knowledge from any website and create specialized AI agents.")
     
-    # Input form for website URL
-    with st.form("website_form"):
-        website_url = st.text_input("Enter website URL", placeholder="https://example.com")
-        col1, col2 = st.columns(2)
-        with col1:
-            max_pages = st.slider("Maximum pages to analyze", 1, 30, DEFAULT_MAX_URLS)
-        with col2:
-            use_full_text = st.checkbox("Use comprehensive text extraction", value=DEFAULT_USE_FULL_TEXT)
-        submit_button = st.form_submit_button("Create Agent")
+    # Display welcome message using AI chat message component
+    if not st.session_state.domain_agent:
+        with st.chat_message("assistant"):
+            st.markdown("👋 Welcome! Enter a website URL in the sidebar, and I'll transform it into an AI agent you can chat with.")
+    
+    # Form elements in sidebar
+    st.sidebar.title("Create your agent")
+    
+    website_url = st.sidebar.text_input("Enter website URL", placeholder="https://example.com")
+    
+    max_pages = st.sidebar.slider("Maximum pages to analyze", 1, 100, DEFAULT_MAX_URLS, 
+                         help="More pages means more comprehensive knowledge but longer processing time")
+    
+    use_full_text = st.sidebar.checkbox("Use comprehensive text extraction", value=DEFAULT_USE_FULL_TEXT,
+                                help="Extract full contents of each page (may increase processing time)")
+    
+    submit_button = st.sidebar.button("Create agent", type="primary")
+    
+    # Display current status in sidebar if extraction is in progress
+    if st.session_state.extraction_status == "extracting":
+        st.sidebar.info("Extraction in progress...")
+    elif st.session_state.extraction_status == "complete":
+        st.sidebar.success("Agent created successfully!")
+    elif st.session_state.extraction_status == "failed":
+        st.sidebar.error("Extraction failed. Please try again.")
     
     # Process form submission
     if submit_button and website_url:

@@ -3,6 +3,7 @@ import asyncio
 from typing import AsyncGenerator, Generator
 import threading
 import queue
+import time
 
 from src.config import DEFAULT_MAX_URLS, DEFAULT_USE_FULL_TEXT
 from src.llms_text import extract_website_content
@@ -20,10 +21,17 @@ def init_session_state():
         st.session_state.messages = []
     if 'extraction_status' not in st.session_state:
         st.session_state.extraction_status = None
+    if 'pending_response' not in st.session_state:
+        st.session_state.pending_response = None
 
 def run_app():
     # Initialize session state
     init_session_state()
+    
+    # Check if we have a pending response to add to the message history
+    if st.session_state.pending_response is not None:
+        st.session_state.messages.append({"role": "assistant", "content": st.session_state.pending_response})
+        st.session_state.pending_response = None
     
     # App title and description in main content area
     st.title("WebToAgent")
@@ -99,8 +107,9 @@ def stream_agent_response(agent, prompt):
     # Flag to signal when the async function is complete
     done_event = threading.Event()
     
-    # To collect the full response for the chat history
-    full_response = []
+    # Create a shared variable to collect the complete response
+    # Do NOT use session state in the background thread
+    response_collector = []
     
     # The thread function to run the async event loop
     def run_async_loop():
@@ -108,6 +117,7 @@ def stream_agent_response(agent, prompt):
         asyncio.set_event_loop(loop)
         
         async def process_stream():
+            token_count = 0
             try:
                 result = Runner.run_streamed(agent, prompt)
                 
@@ -118,17 +128,29 @@ def stream_agent_response(agent, prompt):
                         isinstance(event.data, ResponseTextDeltaEvent) and 
                         event.data.delta):
                         # Put the token in the queue
-                        token_queue.put(event.data.delta)
-                        full_response.append(event.data.delta)
+                        token = event.data.delta
+                        token_queue.put(token)
+                        
+                        # Safely append to collector (no session state access)
+                        response_collector.append(token)
+                        token_count += 1
                 
                 # If no tokens were yielded, use the final output
-                if not full_response and hasattr(result, 'final_output') and result.final_output:
+                if token_count == 0 and hasattr(result, 'final_output') and result.final_output:
                     token_queue.put(result.final_output)
-                    full_response.append(result.final_output)
+                    response_collector.append(result.final_output)
             except Exception as e:
                 # Put the exception in the queue to be raised in the main thread
+                print(f"Error in streaming process: {str(e)}")
                 token_queue.put(e)
             finally:
+                # Build the complete response
+                complete_response = ''.join(response_collector)
+                
+                # Store the complete response in a global place where the main thread can find it
+                global _last_complete_response
+                _last_complete_response = complete_response
+                
                 # Signal that we're done processing
                 done_event.set()
                 # Always put a None to indicate end of stream
@@ -146,22 +168,33 @@ def stream_agent_response(agent, prompt):
     
     # Generator function to yield tokens from the queue
     def token_generator():
+        token_count = 0
+        
         while not done_event.is_set() or not token_queue.empty():
             try:
                 token = token_queue.get(timeout=0.1)
                 if token is None:
                     # End of stream
+                    # After streaming is complete, set the pending response in session state
+                    # This needs to be done from the main thread
+                    global _last_complete_response
+                    if '_last_complete_response' in globals() and _last_complete_response:
+                        st.session_state.pending_response = _last_complete_response
                     break
                 elif isinstance(token, Exception):
                     # Re-raise exceptions from the background thread
                     raise token
                 else:
+                    token_count += 1
                     yield token
             except queue.Empty:
                 # Queue timeout, just continue waiting
                 continue
     
-    return token_generator(), ''.join(full_response)
+    return token_generator()
+
+# Global variable to store the last complete response
+_last_complete_response = None
 
 def get_non_streaming_response(agent, prompt):
     """Fallback function for non-streaming response."""
@@ -169,7 +202,12 @@ def get_non_streaming_response(agent, prompt):
     asyncio.set_event_loop(loop)
     try:
         result = loop.run_until_complete(Runner.run(agent, prompt))
-        return result.final_output
+        response_text = result.final_output or ""
+        
+        # Store for the next Streamlit run to pick up
+        st.session_state.pending_response = response_text
+        
+        return response_text
     finally:
         loop.close()
 
@@ -189,26 +227,22 @@ def display_chat_interface():
         with st.chat_message("user"):
             st.markdown(prompt)
         
+        # Reset any pending response
+        st.session_state.pending_response = None
+        
         # Get agent response with streaming
         with st.chat_message("assistant"):
             try:
-                # Create the generator for streaming and the full response collection
-                token_generator, full_response_future = stream_agent_response(st.session_state.domain_agent, prompt)
-                
                 # Stream the response tokens
-                st.write_stream(token_generator)
+                token_stream = stream_agent_response(st.session_state.domain_agent, prompt)
+                st.write_stream(token_stream)
                 
-                # Only add to the history if there was actual content
-                if full_response_future:
-                    # Add assistant response to chat history
-                    st.session_state.messages.append({"role": "assistant", "content": full_response_future})
             except Exception as e:
                 # Fallback to non-streaming response if streaming fails
                 st.warning(f"Streaming failed ({str(e)}), using standard response method.")
                 try:
                     full_response = get_non_streaming_response(st.session_state.domain_agent, prompt)
                     st.markdown(full_response)
-                    st.session_state.messages.append({"role": "assistant", "content": full_response})
                 except Exception as e2:
                     st.error(f"Error generating response: {str(e2)}")
 

@@ -4,7 +4,6 @@ import asyncio
 from src.config import DEFAULT_MAX_URLS, DEFAULT_USE_FULL_TEXT
 from src.llms_text import extract_website_content
 from src.agents import extract_domain_knowledge, create_domain_agent
-from src.models import DomainKnowledge
 from agents import Runner
 
 # Initialize session state
@@ -23,7 +22,7 @@ def run_app():
     init_session_state()
     
     # App title and description in main content area
-    st.title("KnowledgeForge")
+    st.title("WebToAgent")
     st.subheader("Extract domain knowledge from any website and create specialized AI agents.")
     
     # Display welcome message using AI chat message component
@@ -36,21 +35,13 @@ def run_app():
     
     website_url = st.sidebar.text_input("Enter website URL", placeholder="https://example.com")
     
-    max_pages = st.sidebar.slider("Maximum pages to analyze", 1, 100, DEFAULT_MAX_URLS, 
-                         help="More pages means more comprehensive knowledge but longer processing time")
+    max_pages = st.sidebar.slider("Maximum pages to analyze", 1, 25, DEFAULT_MAX_URLS, 
+                         help="More pages means more comprehensive knowledge but longer processing time. Capped at 25 pages to respect rate limits.")
     
     use_full_text = st.sidebar.checkbox("Use comprehensive text extraction", value=DEFAULT_USE_FULL_TEXT,
                                 help="Extract full contents of each page (may increase processing time)")
     
     submit_button = st.sidebar.button("Create agent", type="primary")
-    
-    # # Display current status in sidebar if extraction is in progress
-    # if st.session_state.extraction_status == "extracting":
-    #     st.sidebar.info("Extraction in progress...")
-    # elif st.session_state.extraction_status == "complete":
-    #     st.sidebar.success("Agent created successfully!")
-    # elif st.session_state.extraction_status == "failed":
-    #     st.sidebar.error("Extraction failed. Please try again.")
     
     # Process form submission
     if submit_button and website_url:

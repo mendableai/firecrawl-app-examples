@@ -1,6 +1,5 @@
 import streamlit as st
 import asyncio
-from pyvis.network import Network
 
 from src.config import DEFAULT_MAX_URLS, DEFAULT_USE_FULL_TEXT
 from src.llms_text import extract_website_content
@@ -78,51 +77,9 @@ def run_app():
             st.error(f"Error: {str(e)}")
             st.session_state.extraction_status = "failed"
     
-    # Display knowledge visualization if available
-    if st.session_state.domain_knowledge:
-        display_knowledge_visualization(st.session_state.domain_knowledge)
-    
     # Chat interface
     if st.session_state.domain_agent:
         display_chat_interface()
-
-def display_knowledge_visualization(domain_knowledge: DomainKnowledge):
-    """Display visualization of the domain knowledge."""
-    st.subheader("Domain Knowledge Map")
-    
-    # Create network graph visualization
-    net = Network(height="500px", width="100%", bgcolor="#222222", font_color="white")
-    
-    # Add concept nodes
-    for concept in domain_knowledge.core_concepts:
-        net.add_node(concept.name, title=concept.description, size=30*concept.importance_score)
-        
-        # Add edges between related concepts
-        for related in concept.related_concepts:
-            net.add_edge(concept.name, related, color="lightblue")
-    
-    # Add terminology nodes
-    for term_info in domain_knowledge.terminology:
-        net.add_node(term_info.term, title=term_info.definition, size=20, color="#75E6DA")
-    
-    # Generate and display the graph
-    net.save_graph("temp_graph.html")
-    with open("temp_graph.html", "r", encoding="utf-8") as f:
-        graph_html = f.read()
-    st.components.v1.html(graph_html, height=550)
-    
-    # Display key terminology
-    with st.expander("Key Terminology"):
-        for term_info in domain_knowledge.terminology:
-            st.markdown(f"**{term_info.term}**: {term_info.definition}")
-            if term_info.examples:
-                st.markdown("Examples: " + ", ".join(term_info.examples))
-            st.markdown("---")
-    
-    # Display key insights
-    with st.expander("Key Insights"):
-        for insight in domain_knowledge.key_insights:
-            st.markdown(f"- {insight.content}")
 
 def display_chat_interface():
     """Display chat interface for interacting with the domain agent."""

@@ -1,8 +1,6 @@
-import asyncio
 from datetime import datetime
-from typing import List, Dict
+from typing import List
 
-from openai import OpenAI
 from agents import Agent, Runner, ModelSettings
 
 from src.models import Concept, Terminology, Insight, DomainKnowledge

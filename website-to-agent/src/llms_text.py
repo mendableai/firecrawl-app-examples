@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict
 
 from firecrawl import FirecrawlApp
 from src.config import FIRECRAWL_API_KEY

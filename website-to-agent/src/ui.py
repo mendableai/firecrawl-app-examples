@@ -1,9 +1,7 @@
 import streamlit as st
 import asyncio
-from typing import AsyncGenerator, Generator
 import threading
 import queue
-import time
 
 from src.config import DEFAULT_MAX_URLS, DEFAULT_USE_FULL_TEXT
 from src.llms_text import extract_website_content

@@ -1,8 +1,5 @@
 import streamlit as st
 import asyncio
-import time
-from datetime import datetime
-import os
 from pyvis.network import Network
 
 from src.config import DEFAULT_MAX_URLS, DEFAULT_USE_FULL_TEXT
@@ -105,8 +102,8 @@ def display_knowledge_visualization(domain_knowledge: DomainKnowledge):
             net.add_edge(concept.name, related, color="lightblue")
     
     # Add terminology nodes
-    for term, info in domain_knowledge.terminology.items():
-        net.add_node(term, title=info.definition, size=20, color="#75E6DA")
+    for term_info in domain_knowledge.terminology:
+        net.add_node(term_info.term, title=term_info.definition, size=20, color="#75E6DA")
     
     # Generate and display the graph
     net.save_graph("temp_graph.html")
@@ -116,10 +113,10 @@ def display_knowledge_visualization(domain_knowledge: DomainKnowledge):
     
     # Display key terminology
     with st.expander("Key Terminology"):
-        for term, info in domain_knowledge.terminology.items():
-            st.markdown(f"**{term}**: {info.definition}")
-            if info.examples:
-                st.markdown("Examples: " + ", ".join(info.examples))
+        for term_info in domain_knowledge.terminology:
+            st.markdown(f"**{term_info.term}**: {term_info.definition}")
+            if term_info.examples:
+                st.markdown("Examples: " + ", ".join(term_info.examples))
             st.markdown("---")
     
     # Display key insights

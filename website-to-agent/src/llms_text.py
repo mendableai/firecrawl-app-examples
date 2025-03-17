@@ -56,3 +56,6 @@ def extract_website_content(url: str, max_urls: int = 10, show_full_text: bool =
         'processed_urls': status_response['data'].get('processedUrls', []),
         'extraction_timestamp': datetime.now().isoformat()
     }
+
+if __name__ == "__main__":
+    print(extract_website_content("https://www.firecrawl.dev"))

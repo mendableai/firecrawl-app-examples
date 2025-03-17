@@ -34,7 +34,7 @@ async def extract_domain_knowledge(content: str, url: str) -> DomainKnowledge:
         Structure everything according to the output schema.
         """,
         output_type=DomainKnowledge,
-        model="gpt-4o",
+        model="gpt-4o-mini",
         model_settings=ModelSettings(
             temperature=0.2,  # Low temperature for more deterministic extraction
             max_tokens=4096,  # Allow space for comprehensive knowledge extraction
@@ -91,7 +91,7 @@ def create_domain_agent(domain_knowledge: DomainKnowledge) -> Agent:
     domain_agent = Agent(
         name=f"Domain Expert: {domain_knowledge.source_url}",
         instructions=instructions,
-        model="gpt-4o",
+        model="gpt-4o-mini",
         model_settings=ModelSettings(
             temperature=0.3,
             max_tokens=2048,
@@ -109,13 +109,13 @@ def _format_concepts(concepts: List[Concept]) -> str:
             formatted += f"  Related: {', '.join(concept.related_concepts)}\n"
     return formatted
 
-def _format_terminology(terminology: Dict[str, Terminology]) -> str:
+def _format_terminology(terminology: List[Terminology]) -> str:
     """Format terminology for agent instructions."""
     formatted = ""
-    for term, info in terminology.items():
-        formatted += f"- {term}: {info.definition}\n"
-        if info.examples:
-            formatted += f"  Examples: {'; '.join(info.examples)}\n"
+    for term_info in terminology:
+        formatted += f"- {term_info.term}: {term_info.definition}\n"
+        if term_info.examples:
+            formatted += f"  Examples: {'; '.join(term_info.examples)}\n"
     return formatted
 
 def _format_insights(insights: List[Insight]) -> str:

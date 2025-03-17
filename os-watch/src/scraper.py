@@ -1,7 +1,12 @@
 import json
+import os
 from typing import List, Dict, Any, Optional
-import firecrawl
-from .config import SearchConfig
+from firecrawl import FirecrawlApp
+from dotenv import load_dotenv
+from .config import SearchConfig, GitHubRepository, Repositories
+
+# Load environment variables for API key
+load_dotenv()
 
 
 class GitHubTrendScraper:
@@ -9,6 +14,10 @@ class GitHubTrendScraper:
 
     def __init__(self, config: SearchConfig):
         self.config = config
+        # Get API key from environment variables
+        self.api_key = os.environ.get("FIRECRAWL_API_KEY", "")
+        # Initialize FirecrawlApp with API key
+        self.firecrawl_app = FirecrawlApp(api_key=self.api_key)
 
     def build_url(self) -> str:
         """Build the GitHub trending URL based on configuration"""
@@ -24,112 +33,72 @@ class GitHubTrendScraper:
         return url
 
     def scrape(self) -> List[Dict[str, Any]]:
-        """Scrape GitHub trending repositories"""
+        """Scrape GitHub trending repositories using structured extraction"""
         url = self.build_url()
 
-        # Use Firecrawl to scrape the trending page
-        result = firecrawl.scrape(
-            url=url,
-            formats=["markdown"],
-            onlyMainContent=True,
-            waitFor=2000,  # Wait 2 seconds for page to load
-        )
+        # Use Firecrawl to scrape the trending page with structured extraction
+        try:
+            # Call Firecrawl with structured extraction as shown in the notebook
+            result = self.firecrawl_app.scrape_url(
+                url,
+                params={
+                    "formats": ["extract"],
+                    "extract": {
+                        "prompt": "Scrape the GitHub trending page and extract the repositories based on the schema provided.",
+                        "schema": Repositories.model_json_schema(),
+                    },
+                },
+            )
 
-        # Parse the content to extract repositories
-        repositories = self._extract_repositories(result["markdown"])
+            # Check if we got structured data back
+            if "extract" in result and "repositories" in result["extract"]:
+                # Convert the extracted data to our standard dictionary format
+                repositories = self._process_extracted_repos(
+                    result["extract"]["repositories"]
+                )
 
-        # Filter repositories based on keywords
-        filtered_repos = self._filter_by_keywords(repositories)
+                # Filter repositories based on keywords
+                filtered_repos = self._filter_by_keywords(repositories)
 
-        return filtered_repos
+                return filtered_repos
+            else:
+                print("Structured extraction failed, no repository data found")
+                return []
 
-    def _extract_repositories(self, markdown_content: str) -> List[Dict[str, Any]]:
-        """
-        Parse the markdown content to extract repository information.
+        except Exception as e:
+            print(f"Error scraping GitHub trending page: {str(e)}")
+            return []
 
-        This is a simplified version that would need to be refined based on
-        the actual structure of the markdown returned by Firecrawl.
-        """
-        # In a real implementation, this would parse the markdown more carefully
-        # For this MVP, we'll use a simple approach to extract repositories
+    def _process_extracted_repos(
+        self, extracted_repos: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Process the structured extracted repositories into our standard format"""
+        processed_repos = []
 
-        repositories = []
-        lines = markdown_content.split("\n")
+        for i, repo in enumerate(extracted_repos):
+            # Using the format from the notebook
+            processed_repo = {
+                "name": repo.get("name", ""),
+                "display_name": (
+                    repo.get("name", "").split("/")[-1]
+                    if "/" in repo.get("name", "")
+                    else repo.get("name", "")
+                ),
+                "url": repo.get(
+                    "repo_url", f"https://github.com/{repo.get('name', '')}"
+                ),
+                "description": repo.get("description", ""),
+                "stars": repo.get("stars_count", ""),
+                "today_stars": repo.get("stars_today", ""),
+                "language": repo.get("language", self.config.language or "Unknown"),
+                "rank": i + 1,  # Assign rank based on position in the list
+                "forks": repo.get("forks_count", ""),
+                "owner": repo.get("repo_owner", ""),
+            }
 
-        # Simple parsing logic - this would need refinement
-        current_repo = {}
-        for line in lines:
-            # Look for repository names
-            if (
-                "](https://github.com/" in line
-                and "/tree/" not in line
-                and "/blob/" not in line
-            ):
-                # If we were already processing a repo, add it to our list
-                if current_repo:
-                    repositories.append(current_repo)
-                    current_repo = {}
+            processed_repos.append(processed_repo)
 
-                # Extract repository info
-                try:
-                    parts = line.split("](https://github.com/")
-                    name_part = parts[0].strip("[")
-
-                    # Extract full repository name
-                    repo_path = parts[1].split(")")[0]
-
-                    # Sometimes there's more text after the name
-                    if " - " in name_part:
-                        name = name_part.split(" - ")[0]
-                    else:
-                        name = name_part
-
-                    current_repo = {
-                        "name": repo_path,
-                        "display_name": name,
-                        "url": f"https://github.com/{repo_path}",
-                        "description": "",
-                        "stars": "",
-                        "today_stars": "",
-                        "language": self.config.language or "Unknown",
-                    }
-                except:
-                    # Skip lines that don't match expected format
-                    continue
-
-            # Look for descriptions
-            elif (
-                current_repo
-                and not current_repo["description"]
-                and line.strip()
-                and "![" not in line
-                and "](https" not in line
-            ):
-                current_repo["description"] = line.strip()
-
-            # Look for stars info
-            elif current_repo and "★" in line:
-                try:
-                    stars_part = line.split("★")[1].strip()
-                    current_repo["stars"] = stars_part
-
-                    # Try to find today's stars if available
-                    if "today" in line.lower() or "stars today" in line.lower():
-                        today_part = line.lower().split("today")[0].strip()
-                        if today_part[-1].isdigit():
-                            current_repo["today_stars"] = today_part.split()[-1]
-                except:
-                    pass
-
-        # Add the last repository if we were processing one
-        if current_repo:
-            repositories.append(current_repo)
-
-        # Add rank information
-        for i, repo in enumerate(repositories):
-            repo["rank"] = i + 1
-
-        return repositories
+        return processed_repos
 
     def _filter_by_keywords(
         self, repositories: List[Dict[str, Any]]

@@ -1,10 +1,29 @@
 import os
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+
+class GitHubRepository(BaseModel):
+    """Model for a GitHub repository extracted from trending page"""
+
+    name: str = Field(description="Full name of the repository (owner/repo)")
+    description: Optional[str] = Field(None, description="Repository description")
+    language: Optional[str] = Field(None, description="Main programming language")
+    stars_count: Optional[str] = Field(None, description="Total number of stars")
+    stars_today: Optional[str] = Field(None, description="Stars gained today")
+    forks_count: Optional[str] = Field(None, description="Total number of forks")
+    repo_owner: Optional[str] = Field(None, description="Repository owner")
+    repo_url: Optional[str] = Field(None, description="Repository URL")
+
+
+class Repositories(BaseModel):
+    """Wrapper model for a list of GitHub repositories"""
+
+    repositories: List[GitHubRepository]
 
 
 class NotificationConfig(BaseModel):

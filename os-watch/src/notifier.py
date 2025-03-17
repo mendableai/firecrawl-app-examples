@@ -111,3 +111,11 @@ class SlackNotifier:
         )
 
         return {"blocks": blocks}
+
+
+if __name__ == "__main__":
+    config = NotificationConfig(
+        webhook_url="https://hooks.slack.com/services/T00000000/B00000000/X00000000"
+    )
+    notifier = SlackNotifier(config)
+    notifier.send_notification([], [])

@@ -13,6 +13,9 @@ firecrawl-py = "^1.14.1"
 python-dotenv = "^1.0.1"
 
 
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

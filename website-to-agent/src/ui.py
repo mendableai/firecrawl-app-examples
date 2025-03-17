@@ -44,13 +44,13 @@ def run_app():
     
     submit_button = st.sidebar.button("Create agent", type="primary")
     
-    # Display current status in sidebar if extraction is in progress
-    if st.session_state.extraction_status == "extracting":
-        st.sidebar.info("Extraction in progress...")
-    elif st.session_state.extraction_status == "complete":
-        st.sidebar.success("Agent created successfully!")
-    elif st.session_state.extraction_status == "failed":
-        st.sidebar.error("Extraction failed. Please try again.")
+    # # Display current status in sidebar if extraction is in progress
+    # if st.session_state.extraction_status == "extracting":
+    #     st.sidebar.info("Extraction in progress...")
+    # elif st.session_state.extraction_status == "complete":
+    #     st.sidebar.success("Agent created successfully!")
+    # elif st.session_state.extraction_status == "failed":
+    #     st.sidebar.error("Extraction failed. Please try again.")
     
     # Process form submission
     if submit_button and website_url:
@@ -86,7 +86,7 @@ def run_app():
                     st.session_state.domain_agent = domain_agent
                     
                     st.session_state.extraction_status = "complete"
-                    st.success("Agent created successfully!")
+                    st.success("Agent created successfully! You can now chat with the agent.")
         
         except Exception as e:
             st.error(f"Error: {str(e)}")
@@ -98,8 +98,6 @@ def run_app():
 
 def display_chat_interface():
     """Display chat interface for interacting with the domain agent."""
-    st.subheader("Chat with your domain expert")
-    
     # Display chat history
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):

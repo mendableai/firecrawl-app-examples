@@ -65,12 +65,12 @@ const Hero: React.FC<HeroProps> = ({ onAnalyze, areApiKeysSet }) => {
           <h1
             ref={titleRef}
             className='text-5xl md:text-6xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400'>
-            SaaS CRO Analyzer
+           Hero Optimizer
           </h1>
           <p
             ref={subtitleRef}
             className='text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-5 max-w-3xl mx-auto'>
-            Analyze your SaaS hero section for conversion rate optimization with
+            Analyze your website's hero section for conversion rate optimization with
             AI-powered insights
           </p>
           <div className='flex flex-wrap justify-center gap-4 mb-10'>

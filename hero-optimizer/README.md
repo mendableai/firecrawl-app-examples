@@ -1,10 +1,10 @@
-# SaaS CRO Analyzer
+# Hero Optimizer
 
 A powerful web application that analyzes SaaS hero sections and provides actionable Conversion Rate Optimization (CRO) insights. This tool leverages Firecrawl for web scraping and Claude 3.7 for intelligent analysis.
 
 ## Features
 
-- **Instant Hero Section Analysis**: Upload any SaaS URL and get immediate analysis of its hero section
+- **Instant Hero Section Analysis**: Upload any URL and get immediate analysis of its hero section
 - **AI-Powered Insights**: Leverages Claude 3.7 to compare against best CRO practices
 - **Actionable Recommendations**: Receive specific suggestions to improve your conversion rates
 - **Beautiful UI**: Sleek, orange-themed UI with smooth GSAP animations
@@ -33,8 +33,8 @@ A powerful web application that analyzes SaaS hero sections and provides actiona
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/saas-cro-analyzer.git
-   cd saas-cro-analyzer
+   git clone https://github.com/your-username/hero-optimizer.git
+   cd hero-optimizer
    ```
 
 2. Install dependencies:

@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SaaS CRO Analyzer | Improve Your Hero Section",
+  title: "Hero Optimizer| Improve Your Hero Section",
   description:
-    "Analyze your SaaS website's hero section and get actionable insights based on top CRO practices",
+    "Analyze your website's hero section and get actionable insights based on top CRO practices",
   keywords:
-    "SaaS, CRO, Conversion Rate Optimization, Hero Section, Web Analysis",
+    "Hero,SaaS, CRO, Conversion Rate Optimization, Hero Section, Web Analysis",
 };
 
 export default function RootLayout({

@@ -1,14 +1,18 @@
 import streamlit as st
 import json
 import os
+import sys
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-# Import our modules
-from .config import AppConfig, NotificationConfig, SearchConfig, DEFAULT_CONFIG
-from .scraper import GitHubTrendScraper
-from .notifier import SlackNotifier
-from .scheduler import Scheduler
+# Add project root to Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# Import our modules with absolute imports instead of relative imports
+from src.config import AppConfig, NotificationConfig, SearchConfig, DEFAULT_CONFIG
+from src.scraper import GitHubTrendScraper
+from src.notifier import SlackNotifier
+from src.scheduler import Scheduler
 
 # Set page config
 st.set_page_config(page_title="Open-source Watch", page_icon="🔍", layout="wide")

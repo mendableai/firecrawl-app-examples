@@ -3,7 +3,7 @@ import os
 from typing import List, Dict, Any, Optional
 from firecrawl import FirecrawlApp
 from dotenv import load_dotenv
-from .config import SearchConfig, GitHubRepository, Repositories
+from src.config import SearchConfig, GitHubRepository, Repositories
 
 # Load environment variables for API key
 load_dotenv()
@@ -118,3 +118,8 @@ class GitHubTrendScraper:
                 filtered.append(repo)
 
         return filtered
+
+
+if __name__ == "__main__":
+    scraper = GitHubTrendScraper(SearchConfig(keywords=["ai", "ml", "llm"]))
+    print(scraper.scrape())

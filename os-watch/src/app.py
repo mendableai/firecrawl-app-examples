@@ -102,7 +102,9 @@ def save_config():
 def main():
     """Main Streamlit application"""
     st.title("🔍 Open-source Watch")
-    st.subheader("Monitor trending GitHub repositories")
+    st.subheader(
+        "Monitor trending GitHub repositories on schedule and get Slack notifications when new repositories are trending."
+    )
 
     # Create tabs for different sections
     tab1, tab2, tab3 = st.tabs(["Search", "Configure", "Results"])

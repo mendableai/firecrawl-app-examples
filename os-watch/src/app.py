@@ -30,10 +30,17 @@ if "last_results" not in st.session_state:
 if "is_scheduled" not in st.session_state:
     st.session_state.is_scheduled = False
 
+if "firecrawl_api_key" not in st.session_state:
+    st.session_state.firecrawl_api_key = os.environ.get("FIRECRAWL_API_KEY", "")
+
 
 def run_scrape_task():
     """Run the scraping task and send notification"""
     config = st.session_state.config
+
+    # Set the API key in environment for the scraper to use
+    if st.session_state.firecrawl_api_key:
+        os.environ["FIRECRAWL_API_KEY"] = st.session_state.firecrawl_api_key
 
     # Create scraper
     scraper = GitHubTrendScraper(config.search)
@@ -89,6 +96,10 @@ def save_config():
     os.environ["SEARCH_LANGUAGE"] = config.search.language or ""
     os.environ["SEARCH_PERIOD"] = config.search.time_period
 
+    # Save Firecrawl API key if it exists in session state
+    if "firecrawl_api_key" in st.session_state and st.session_state.firecrawl_api_key:
+        os.environ["FIRECRAWL_API_KEY"] = st.session_state.firecrawl_api_key
+
     # Save to .env file
     with open(".env", "w") as f:
         f.write(f"SLACK_WEBHOOK_URL={config.notification.webhook_url}\n")
@@ -97,6 +108,12 @@ def save_config():
         f.write(f"SEARCH_KEYWORDS={','.join(config.search.keywords)}\n")
         f.write(f"SEARCH_LANGUAGE={config.search.language or ''}\n")
         f.write(f"SEARCH_PERIOD={config.search.time_period}\n")
+        # Add Firecrawl API key if it exists
+        if (
+            "firecrawl_api_key" in st.session_state
+            and st.session_state.firecrawl_api_key
+        ):
+            f.write(f"FIRECRAWL_API_KEY={st.session_state.firecrawl_api_key}\n")
 
 
 def main():
@@ -185,6 +202,11 @@ def main():
                 # Save the configuration
                 save_config()
 
+                # Restart the scheduler if it's running
+                if st.session_state.is_scheduled:
+                    stop_scheduler()
+                    start_scheduler()
+
                 # Show success message
                 if results:
                     st.success(
@@ -226,6 +248,14 @@ def main():
 
         # Create a form for the notification settings
         with st.form("notification_form"):
+            # Firecrawl API Key input
+            firecrawl_api_key = st.text_input(
+                "Firecrawl API Key",
+                value=os.environ.get("FIRECRAWL_API_KEY", ""),
+                type="password",
+                help="Required for scraping GitHub trending repositories. Get your API key from Firecrawl.",
+            )
+
             # Webhook URL input
             webhook_url = st.text_input(
                 "Slack Webhook URL",
@@ -255,12 +285,15 @@ def main():
             submitted = st.form_submit_button("Save Configuration")
 
             if submitted:
-                # Update the configuration
+                # Update the notification settings
                 st.session_state.config.notification = NotificationConfig(
                     webhook_url=webhook_url,
                     frequency=frequency,
                     time_of_day=time_of_day,
                 )
+
+                # Store the Firecrawl API key in session state
+                st.session_state.firecrawl_api_key = firecrawl_api_key
 
                 # Save the configuration
                 save_config()
@@ -271,7 +304,7 @@ def main():
                     start_scheduler()
 
                 # Show success message
-                st.success("Configuration saved!")
+                st.success("Configuration saved successfully!")
 
         # Test notification
         st.subheader("Test notification")

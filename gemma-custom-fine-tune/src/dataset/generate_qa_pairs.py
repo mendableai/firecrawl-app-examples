@@ -4,6 +4,7 @@ import logging
 from typing import List, Dict, Any
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from pydantic import BaseModel
 from openai import OpenAI
@@ -14,7 +15,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Define the system prompt exactly as in the notebook
 PROMPT = """
     You are an expert at generating question-answer pairs from a given text. For each given text, you must generate 5 QA pairs. 
     
@@ -45,9 +45,18 @@ class QAPairs(BaseModel):
     pairs: List[Pair]
 
 
+# Simple retry decorator for rate limits (429 errors)
+@retry(
+    wait=wait_exponential(multiplier=1, min=4, max=60),
+    stop=stop_after_attempt(5),
+    reraise=True,
+    before_sleep=lambda retry_state: logger.warning(
+        f"Rate limit exceeded (429), retrying in {retry_state.next_action.sleep} seconds..."
+    ),
+)
 def generate_qa(text: str, model: str = "gpt-4o") -> QAPairs:
     """
-    Generate QA pairs from a text chunk using OpenAI's API
+    Generate QA pairs from a text chunk using OpenAI's API with retry for rate limits
 
     Args:
         text: The text content to generate QA pairs from
@@ -70,9 +79,15 @@ def generate_qa(text: str, model: str = "gpt-4o") -> QAPairs:
 
         return response.choices[0].message.parsed
     except Exception as e:
-        logger.error(f"Error generating QA pairs: {e}")
-        # Return an empty QAPairs object if generation fails
-        return QAPairs(pairs=[])
+        # Check if it's a rate limit error (429)
+        if hasattr(e, "status_code") and e.status_code == 429:
+            # Let the retry decorator handle this
+            logger.warning("Rate limit (429) hit, retrying with backoff...")
+            raise
+        else:
+            logger.error(f"Error generating QA pairs: {e}")
+            # Return an empty QAPairs object for other errors
+            return QAPairs(pairs=[])
 
 
 def load_chunks(chunks_file: str) -> List[Dict[str, Any]]:
@@ -94,7 +109,7 @@ def load_chunks(chunks_file: str) -> List[Dict[str, Any]]:
 
 
 def generate_qa_pairs_from_chunks(
-    chunks: List[Dict[str, Any]], model: str = "gpt-4o", max_workers: int = 5
+    chunks: List[Dict[str, Any]], model: str = "gpt-4o", max_workers: int = 3
 ) -> List[Pair]:
     """
     Generate QA pairs from chunks in parallel
@@ -170,7 +185,7 @@ def process_chunks(
     chunks_file: str,
     output_file: str = "qa_dataset.json",
     model: str = "gpt-4o",
-    max_workers: int = 5,
+    max_workers: int = 3,
 ) -> None:
     """
     Process chunks from a file and generate QA pairs
@@ -186,7 +201,9 @@ def process_chunks(
         chunks = load_chunks(chunks_file)
 
         # Step 2: Generate QA pairs
-        qa_pairs = generate_qa_pairs_from_chunks(chunks, model, max_workers)
+        qa_pairs = generate_qa_pairs_from_chunks(
+            chunks=chunks, model=model, max_workers=max_workers
+        )
 
         # Step 3: Format QA pairs with unique IDs
         qa_dataset = format_qa_pairs(qa_pairs)
@@ -208,6 +225,5 @@ if __name__ == "__main__":
         chunks_file=chunks_file,
         output_file=output_file,
         model="gpt-4o",
-        max_workers=8,
+        max_workers=5,  # Reduced from 8 to 3 to prevent rate limits
     )
-

@@ -136,4 +136,4 @@ if __name__ == "__main__":
     # Example usage
     url = "https://openai.github.io/openai-agents-python/"
     output_file = "full_text.md"
-    result = scrape_website(url, output_file, max_urls=20)
+    result = scrape_website(url, output_file, max_urls=100)

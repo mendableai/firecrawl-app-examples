@@ -19,6 +19,8 @@ langchain-text-splitters = "^0.3.7"
 python-dotenv = "^1.1.0"
 langchain-experimental = "^0.3.4"
 langchain-openai = "^0.3.10"
+datasets = "^3.4.1"
+huggingface-hub = "^0.29.3"
 
 
 [tool.poetry.group.dev.dependencies]

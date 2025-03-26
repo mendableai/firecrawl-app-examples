@@ -17,6 +17,8 @@ langchain-core = "^0.3.48"
 langchain-community = "^0.3.20"
 langchain-text-splitters = "^0.3.7"
 python-dotenv = "^1.1.0"
+langchain-experimental = "^0.3.4"
+langchain-openai = "^0.3.10"
 
 
 [tool.poetry.group.dev.dependencies]

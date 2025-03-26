@@ -95,7 +95,12 @@ def save_content_to_file(content: str, filepath: str) -> None:
         raise
 
 
-def scrape_website(url: str, output_file: str, max_urls: int = 10) -> Dict[str, Any]:
+def scrape_website(
+    url: str,
+    save_to_file: bool = False,
+    output_file: str = "full_text.md",
+    max_urls: int = 10,
+) -> Dict[str, Any]:
     """
     Main function to scrape a website and save the results
 
@@ -118,11 +123,13 @@ def scrape_website(url: str, output_file: str, max_urls: int = 10) -> Dict[str, 
 
     # Save full text if available
     if "data" in status and "llmsfulltxt" in status["data"]:
-        save_content_to_file(status["data"]["llmsfulltxt"], output_file)
+        if save_to_file:
+            save_content_to_file(status["data"]["llmsfulltxt"], output_file)
+        else:
+            return status["data"]["llmsfulltxt"]
     else:
         logger.warning("No full text content found in job results")
-
-    return status
+        return None
 
 
 if __name__ == "__main__":

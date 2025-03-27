@@ -1,0 +1,156 @@
+{
+  "stories": [
+    {
+      "headline": "Large Language Models in National Security Applications",
+      "link": "https://arxiv.org/abs/2407.03453"
+    },
+    {
+      "headline": "Artificial Intelligence, Scientific Discovery, and Product Innovation [pdf]",
+      "link": "https://aidantr.github.io/files/AI_innovation.pdf"
+    },
+    {
+      "headline": "A stubborn computer scientist accidentally launched the deep learning boom",
+      "link": "https://arstechnica.com/ai/2024/11/how-a-stubborn-computer-scientist-accidentally-launched-the-deep-learning-boom/"
+    },
+    {
+      "headline": "Announcing llama-ocr –  a free + open source OCR tool!\n\nIt takes documents (images for now) &amp; outputs markdown, and does really well for complex receipts, PDFs with tables/charts, ect...\n\nPowered by Llama 3.2 vision on @togethercompute &amp; available on npm today! https://t.co/OZFinqU6QW https://t.co/6J6Gr5C5Xe",
+      "link": "https://x.com/i/status/1856402928086725020"
+    },
+    {
+      "headline": "Can #AI truly understand long videos? Tobias Weyand &amp; the Google Research team are testing the limits w/ Neptune, an open-source benchmark for long video understanding. Dive into the details &amp; see how AI tackles temporal reasoning, cause &amp; effect, &amp; more →https://t.co/jNkgEYkdFA https://t.co/rXPBdRS9TM",
+      "link": "https://x.com/i/status/1856394450445996405"
+    },
+    {
+      "headline": "Google Research is helping firefighters with FireSat, an innovative satellite constellation that delivers real-time, high-resolution wildfire imagery so firefighters can detect and respond to fires faster. Learn how FireSat is making a difference: https://t.co/RcKhZSihaP https://t.co/YLPsMg2Vzd",
+      "link": "https://x.com/i/status/1856101172634902898"
+    },
+    {
+      "headline": "Introducing a novel zero-shot image-to-image model designed for personalized and stylized portraits. Learn how it both accurately preserves the similarity of the input facial image and faithfully applies the artistic style specified in the text prompt →https://t.co/ULxXfeOJl3 https://t.co/8trUi8yjZb",
+      "link": "https://x.com/i/status/1856072910412112207"
+    },
+    {
+      "headline": "Floods are among the most widespread natural disasters. Here we describe our new flood forecasting model for state-of-the-art 7-day lead time prediction, expanded forecasts on ungauged watersheds for expert use, and a new reanalysis &amp; re-forecast dataset. https://t.co/mJZWxkpD7C https://t.co/hIUX61NxDc",
+      "link": "https://x.com/i/status/1856004232626774409"
+    },
+    {
+      "headline": "What if AI could book your appointments, collaborate with others, and navigate life’s complexities on your behalf?\n\nOur latest podcast with @FryRsquared and Senior Research Scientist @IasonGabriel explores the exciting possibilities and ethical challenges of a world with AI… https://t.co/DzsULZOrWR https://t.co/y8skAqoQIZ",
+      "link": "https://x.com/i/status/1856037194089074773"
+    },
+    {
+      "headline": "Introducing generative ads on @everartai. ✨\n\nGenerate ad-format images from existing ones, filling in missing pixels.\n\nCompatible with Instagram, Facebook, and Google ads. https://t.co/w7eNRhzHHU",
+      "link": "https://x.com/i/status/1856067458546946300"
+    },
+    {
+      "headline": "👀 https://t.co/vVOyxxzRak",
+      "link": "https://x.com/i/status/1856415244140347652"
+    },
+    {
+      "headline": "Build distributed AI agent networks with type-safe async messaging with autogen from @Microsoft \n\n33.6K stars 🌟 in Github\n\nWhat it offers:\n\n→ Multi-language support (Python, .NET) with typed interfaces and enforced type checking\n\n→ Modular architecture with three API layers:… https://t.co/sUOBOH7PQq https://t.co/8ZyKAaqhzE",
+      "link": "https://x.com/i/status/1856409023798812953"
+    },
+    {
+      "headline": "This study released on 5-Nov predicted Trump victory for 2024 with ~300 electoral votes.\n\nThe methodology was about finding if virtual voters in AI's head predict real voters at the polls. \n\nBasically, AI mimics voters to see election's future.\n\nUsed demographic data to simulate… https://t.co/QiZemnsacT https://t.co/Xe3MYVXKBL",
+      "link": "https://x.com/i/status/1856391768696336425"
+    },
+    {
+      "headline": "Audiobook recommendations from Elon Musk https://t.co/kFp0Eic1oM https://t.co/gqfBC0lIDv",
+      "link": "https://x.com/i/status/1856382382414459233"
+    },
+    {
+      "headline": "Open-source alternative to OpenAI's voice.\n\nExtends text-based LLM to have native \"listening\" ability. Think of it as an open data, open weight, on device Siri.\n\nWhat it offers:\n\n📌 Implements native \"listening\" abilities in LLMs, similar to Siri but runs locally on-device\n\n📌… https://t.co/DPvM6DK1TK https://t.co/RbLvLdVEpX",
+      "link": "https://x.com/i/status/1856356418582110492"
+    },
+    {
+      "headline": "🚀 Very interesting paper from the Tianqiao &amp; Chrissy Chen Institute (TCCI / @ChenInstitute) that takes AI Long-Term Memory to the next level!\n\n🏆 Achieved first place on GAIA benchmark with 40.53% accuracy on test set\n\n🧠 TCCI's AI researchers applied neuroscience knowledge to… https://t.co/4Odkq7xiMu https://t.co/ln50eGqISO",
+      "link": "https://x.com/i/status/1856323830232559951"
+    },
+    {
+      "headline": "The upper bounds of AI's capability stretch far beyond human cognition.\n\n- Anthropic CEO Dario Amodei\n\nFrom the 5-hour long Lex Fridman's new podcast. (link in comment) https://t.co/yBZ1BhqG9w",
+      "link": "https://x.com/i/status/1856257625652113809"
+    },
+    {
+      "headline": "The AGI Countdown Begins: 2026 / 2027 - Anthropic CEO Dario Amodei's .\n\nLove is infectious confidence and excitement.\n\nFrom the 5-hour long Lex Fridman's new podcast. (link in comment)\n\nThis is one of the best 5 hours you can spend to understand AI and its future timeline. https://t.co/AnyOFY46S9",
+      "link": "https://x.com/i/status/1856248602395594784"
+    },
+    {
+      "headline": "Layer-of-Thoughts (LoT) prompting filters LLM outputs through hierarchical layers, like a smart document sieve.\n\nAnd this structured thought layers turn messy LLM responses into precise legal document retrieval, as proposed in this paper,\n\nOriginal Problem 🎯:\n\nCurrent prompting… https://t.co/nAqranZjo8 https://t.co/vdZCqpcCcF",
+      "link": "https://x.com/i/status/1856084192469381455"
+    },
+    {
+      "headline": "Small models learn developer preferences by studying how code naturally evolves.\n\nCODEFAVOR, proposed in this paper, trains small models to judge code quality like expert developers, but 34x cheaper vs models with 6 ∼ 9× more parameters.\n\nOriginal Problem 🎯:\n\nEvaluating code… https://t.co/Rxf7laLC58 https://t.co/AOBglXpzwX",
+      "link": "https://x.com/i/status/1856083013458898969"
+    },
+    {
+      "headline": "🚀Now it is the time, Nov. 11 10:24! The perfect time for our best coder model ever! Qwen2.5-Coder-32B-Instruct! \n\nWait wait... it's more than a big coder! It is a family of coder models! Besides the 32B coder, we have coders of 0.5B / 1.5B / 3B / 7B / 14B! As usual, we not only… https://t.co/gnH9H2Udsq https://t.co/PjCaXRMdiC",
+      "link": "https://x.com/i/status/1856040217897251044"
+    },
+    {
+      "headline": "Agree.com—Free e-signature for everyone",
+      "link": "https://www.producthunt.com/posts/agree-com-2"
+    },
+    {
+      "headline": "Segwise—Automatically catches issues that affect your mobile ROAS",
+      "link": "https://www.producthunt.com/posts/segwise"
+    },
+    {
+      "headline": "EarlyAI—AI Agent for test code generation",
+      "link": "https://www.producthunt.com/posts/earlyai"
+    },
+    {
+      "headline": "Cerebrium—Serverless infra for AI/ML apps - Build faster and cheaper",
+      "link": "https://www.producthunt.com/posts/cerebrium"
+    },
+    {
+      "headline": "Universal-2 by AssemblyAI—Speech-to-Text API for conversational data",
+      "link": "https://www.producthunt.com/posts/universal-2-by-assemblyai"
+    },
+    {
+      "headline": "Luqo AI—The new AI language learning experience",
+      "link": "https://www.producthunt.com/posts/luqo-ai"
+    },
+    {
+      "headline": "Draft—AI powered to-do list",
+      "link": "https://www.producthunt.com/posts/draft-27844448-74c3-451d-919b-116c24c23098"
+    },
+    {
+      "headline": "Inquir—Search-as-a-service and RAG builder",
+      "link": "https://www.producthunt.com/posts/inquir"
+    },
+    {
+      "headline": "CuriosityXR—Learn with 1M+ 3D models & AI in Mixed Reality",
+      "link": "https://www.producthunt.com/posts/curiosityxr"
+    },
+    {
+      "headline": "Endgame 2.0—Automate your account research and planning with AI",
+      "link": "https://www.producthunt.com/posts/endgame-2-0"
+    },
+    {
+      "headline": "New SoTA Open Background Removal model: RMBG 2.0 🔥\n\n&gt; On the Hub &amp; Transformers! 🤗 https://t.co/TfjRAJc2Gg",
+      "link": "https://x.com/i/status/1856423773794148862"
+    },
+    {
+      "headline": "Enjoy Qwen 2.5 Coder 32B aka Smol AGI on Hugging Chat - 100% free and unlimited queries 🔥 https://t.co/1z1d7IkQbi https://t.co/Yq9On1TfWK",
+      "link": "https://x.com/i/status/1856111604988842357"
+    },
+    {
+      "headline": "Beats GPT4o, rivals Claude Sonnet - can run on the cheapest GPU VPS available!\n\nOpen source is the way to go! https://t.co/sbD0K3rjwF https://t.co/Yq9On1TfWK",
+      "link": "https://x.com/i/status/1856081075853770795"
+    },
+    {
+      "headline": "If this doesn’t make you bullish on Open Source - I don’t know what will! 🔥\n\nThat’s a 32B LLM that can easily fit on a\n ~0.8 USD/ hour GPU - spitting ungodly num of tokens\n\nBack of the napkin math:\n- fp16/ bf16 - 32GB VRAM (would fit on a L40S)\n- 8-bit - 16GB VRAM (L4)\n- 4-bit -… https://t.co/C1P0X31HOx https://t.co/7UHdB2jjwl",
+      "link": "https://x.com/i/status/1856032158814519338"
+    },
+    {
+      "headline": "Wohoo! DeepMind released AlphaFold 3 inference codebase, model weights and an on-demand server! ⚡\n\nAlphaFold  can generate highly accurate biomolecular structure predictions containing proteins, DNA, RNA, ligands, ions, and also model chemical modifications for proteins and… https://t.co/K7bvKclMz1 https://t.co/XeQ0XJZpPE",
+      "link": "https://x.com/i/status/1855956584981020901"
+    },
+    {
+      "headline": "Amazon offers free computing power to AI researchers, aiming to challenge Nvidia",
+      "link": "https://www.reuters.com/technology/artificial-intelligence/amazon-offers-free-computing-power-ai-researchers-aiming-challenge-nvidia-2024-11-12/"
+    },
+    {
+      "headline": "Baidu bolsters AI lineup with enhanced text-to-image tech, no-code app builder",
+      "link": "https://www.reuters.com/technology/artificial-intelligence/baidu-bolsters-ai-lineup-with-text-to-image-generator-no-code-app-builder-2024-11-12/"
+    }
+  ]
+}

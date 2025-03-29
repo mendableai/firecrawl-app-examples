@@ -3,7 +3,7 @@ import Button from "./Button";
 import Input from "./Input";
 import Card from "./Card";
 import AnimatedSection from "./AnimatedSection";
-import apiService from "../services/api";
+import { apiService } from "../services/api";
 import { Settings, Globe } from "lucide-react";
 
 interface AnalyzerFormProps {
@@ -47,6 +47,12 @@ const AnalyzerForm: React.FC<AnalyzerFormProps> = ({
     // Reset error state
     setError("");
 
+    // Check if API keys are configured
+    if (!areApiKeysSet) {
+      setError("Please configure your API keys first");
+      return;
+    }
+
     // Validate URL
     if (!url.trim()) {
       setError("Please enter a URL");
@@ -67,9 +73,21 @@ const AnalyzerForm: React.FC<AnalyzerFormProps> = ({
 
     try {
       await onAnalyze(formattedUrl);
-    } catch (err) {
-      setError("Failed to analyze the website. Please try again.");
-      console.error(err);
+    } catch (err: any) {
+      console.error("Analysis error:", err);
+
+      // Handle specific error cases
+      if (err?.response?.status === 401) {
+        setError(
+          "Invalid API key. Please check your Firecrawl API key and try again.",
+        );
+      } else if (err?.response?.status === 500) {
+        setError("Server error. Please try again later.");
+      } else if (err?.message) {
+        setError(err.message);
+      } else {
+        setError("Failed to analyze the website. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -96,14 +114,15 @@ const AnalyzerForm: React.FC<AnalyzerFormProps> = ({
             <Input
               label={transparent ? "Enter Website URL" : "Website URL"}
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder='firecrawl.dev or https://firecrawl.dev'
+              onChange={(e) => {
+                setUrl(e.target.value);
+                setError(""); // Clear error when user types
+              }}
+              placeholder='https://firecrawl.dev'
               fullWidth
               required
               error={!!error}
-              helperText={
-                error || "We'll scrape analyze the whole website"
-              }
+              helperText={error || "We'll analyze the whole website"}
               icon={<Globe size={20} className='text-orange-500' />}
               className={`pr-12 text-lg py-3 h-14 ${
                 transparent ? "bg-white/80 dark:bg-gray-700/70" : ""
@@ -123,9 +142,7 @@ const AnalyzerForm: React.FC<AnalyzerFormProps> = ({
                 : "h-14 text-lg"
             }
             disabled={!areApiKeysSet}>
-            {areApiKeysSet
-              ? "Analyze Content"
-              : "Configure API Keys First"}
+            {areApiKeysSet ? "Analyze Content" : "Configure API Keys First"}
           </Button>
 
           {!areApiKeysSet && (

@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   title: "Content Optimizer| Improve Your Hero Section",
   description:
     "Analyze your website's hero section and get actionable insights based on top CRO practices",
-  keywords:
-    "CRO, Conversion Rate Optimization, Hero Section, Web Analysis",
+  keywords: "CRO, Conversion Rate Optimization, Hero Section, Web Analysis",
 };
 
 export default function RootLayout({
@@ -31,10 +30,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className='min-h-screen flex flex-col'>
-          <header className='bg-[var(--tertiary)] border-b border-gray-200 py-3'>
+          <header className='bg-white py-3'>
             <div className='container mx-auto px-4 flex justify-between items-center'>
               <h1 className='text-xl font-bold text-[var(--primary)]'>
-              🔥 Content Optimizer
+                🔥 Content Optimizer
               </h1>
               <nav>
                 <a

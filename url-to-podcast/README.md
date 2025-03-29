@@ -52,7 +52,7 @@ This Next.js application converts web content from URLs into engaging podcasts u
 
    ```
    NEXT_PUBLIC_FIRECRAWL_API_KEY=your_firecrawl_api_key
-   NEXT_PUBLIC_ANTHROPIC_API_KEY=your_anthropic_api_key
+   ANTHROPIC_API_KEY=your_anthropic_api_key
    NEXT_PUBLIC_ELEVENLABS_API_KEY=your_elevenlabs_api_key
    ```
 
@@ -99,7 +99,7 @@ This Next.js application converts web content from URLs into engaging podcasts u
 ## Environment Variables
 
 - `NEXT_PUBLIC_FIRECRAWL_API_KEY`: API key for Firecrawl (get from [firecrawl.dev](https://firecrawl.dev))
-- `NEXT_PUBLIC_ANTHROPIC_API_KEY`: API key for Anthropic Claude (get from [Anthropic Console](https://console.anthropic.com/))
+- `ANTHROPIC_API_KEY`: API key for Anthropic Claude (get from [Anthropic Console](https://console.anthropic.com/))
 - `NEXT_PUBLIC_ELEVENLABS_API_KEY`: API key for ElevenLabs (get from [ElevenLabs](https://elevenlabs.io/))
 
 ## Limitations

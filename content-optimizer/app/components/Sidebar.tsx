@@ -96,20 +96,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className='p-5'>
           <ApiKeyForm onApiKeySet={onApiKeySet} />
 
-          {/* Help Text */}
-          <div className='mt-8 pt-4 border-t border-gray-200'>
-            <h3 className='text-sm font-medium text-gray-700 mb-2'>
-              About API Keys
-            </h3>
-            <p className='text-xs text-gray-600'>
-              The Firecrawl API key can be entered here or set in your
-              .env.local file. The Claude API key must be set in your
-              environment variables for security reasons.
-            </p>
-            <p className='text-xs text-gray-600 mt-2'>
-              Restart the server after updating environment variables.
-            </p>
-          </div>
         </div>
       </div>
     </>

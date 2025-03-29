@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Get API key from request header or fallback to env variable
     const apiKeyHeader = request.headers.get("X-Firecrawl-API-Key");
-    const apiKey = apiKeyHeader || process.env.NEXT_PUBLIC_FIRECRAWL_API_KEY;
+    const apiKey = apiKeyHeader || process.env.FIRECRAWL_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(

@@ -5,14 +5,17 @@ import Hero from "./components/Hero";
 import Sidebar from "./components/Sidebar";
 import AnalysisResults from "./components/AnalysisResults";
 import AnimatedSection from "./components/AnimatedSection";
-import apiService, { AnalysisResult, ScrapedData } from "./services/api";
+import {
+  apiService,
+  type AnalysisResult,
+  type ScrapedData,
+} from "./services/api";
 
 // Add client-side environment variable access
 const initializeEnv = () => {
   if (typeof window !== "undefined") {
     window.ENV = {
       FIRECRAWL_API_KEY: process.env.NEXT_PUBLIC_FIRECRAWL_API_KEY,
-      ANTHROPIC_API_KEY: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY,
     };
   }
 };
@@ -57,8 +60,8 @@ export default function Home() {
   }, [areApiKeysSet]);
 
   const handleApiKeySet = (firecrawlKey: string) => {
-    // Need to also check Anthropic API key from env
-    const apiKeysConfigured = !!firecrawlKey && apiService.hasAnthropicApiKey();
+    // Only check Firecrawl key now
+    const apiKeysConfigured = !!firecrawlKey;
     setAreApiKeysSet(apiKeysConfigured);
     setShowKeyboardTip(false);
   };
@@ -105,17 +108,6 @@ export default function Home() {
         onApiKeySet={handleApiKeySet}
         apiKeysConfigured={areApiKeysSet}
       />
-
-      {/* Keyboard shortcut tooltip */}
-      {showKeyboardTip && (
-        <div className='fixed bottom-20 right-4 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-lg z-20 max-w-[200px] animate-fade-in'>
-          <p>
-            Press <kbd className='px-2 py-1 bg-gray-700 rounded'>Alt+S</kbd> to
-            open API settings
-          </p>
-          <div className='absolute -bottom-2 right-4 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-gray-800'></div>
-        </div>
-      )}
 
       {/* Analysis results */}
       {isAnalysisComplete && analysisResult && scrapedData ? (

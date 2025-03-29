@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Button from "./Button";
 import Input from "./Input";
-import apiService from "../services/api";
+import { apiService } from "../services/api";
+import { Eye, EyeOff } from "lucide-react";
 
 interface ApiKeyFormProps {
   onApiKeySet: (firecrawlKey: string) => void;
@@ -11,52 +12,63 @@ const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onApiKeySet }) => {
   const [firecrawlApiKey, setFirecrawlApiKey] = useState("");
   const [isFirecrawlStored, setIsFirecrawlStored] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [anthropicKeyStatus, setAnthropicKeyStatus] = useState<
-    "set" | "missing"
-  >("missing");
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Check if API keys exist on component mount
   useEffect(() => {
     const storedFirecrawlKey = apiService.getFirecrawlApiKey();
-    const hasAnthropicKey = apiService.hasAnthropicApiKey();
 
     if (storedFirecrawlKey) {
       setFirecrawlApiKey(storedFirecrawlKey);
       setIsFirecrawlStored(true);
-    }
-
-    // Check Anthropic key status from environment variables
-    setAnthropicKeyStatus(hasAnthropicKey ? "set" : "missing");
-
-    // If Firecrawl key is set, notify parent
-    if (storedFirecrawlKey) {
       onApiKeySet(storedFirecrawlKey);
     }
   }, [onApiKeySet]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    if (!firecrawlApiKey.trim()) return;
+    // Remove all whitespace from the key
+    const cleanKey = firecrawlApiKey.trim().replace(/\s+/g, "");
+
+    if (!cleanKey) {
+      setError("API key is required");
+      return;
+    }
+
+    // Validate key format
+    if (!cleanKey.startsWith("fc-")) {
+      setError(
+        'API key must start with "fc-". Please enter the complete key as provided.',
+      );
+      return;
+    }
 
     setIsLoading(true);
 
-    // Store Firecrawl API key
-    apiService.setFirecrawlApiKey(firecrawlApiKey);
-
-    // Simulate API key validation
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Store Firecrawl API key
+      apiService.setFirecrawlApiKey(cleanKey);
       setIsFirecrawlStored(true);
-      onApiKeySet(firecrawlApiKey);
-    }, 1000);
+      onApiKeySet(cleanKey);
+    } catch (error: any) {
+      console.error("Failed to set API key:", error);
+      setError(
+        error.message ||
+          "Failed to set API key. Please check the format and try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClearFirecrawlKey = () => {
-    apiService.setFirecrawlApiKey("");
+    apiService.clearFirecrawlApiKey();
     setFirecrawlApiKey("");
     setIsFirecrawlStored(false);
-    localStorage.removeItem("firecrawl_api_key");
+    setError(null);
   };
 
   return (
@@ -67,16 +79,34 @@ const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onApiKeySet }) => {
           Firecrawl API Key
         </h3>
         <form onSubmit={handleSubmit} className='space-y-4'>
-          <Input
-            value={firecrawlApiKey}
-            onChange={(e) => setFirecrawlApiKey(e.target.value)}
-            type='password'
-            placeholder='Enter your Firecrawl API key'
-            fullWidth
-            disabled={isFirecrawlStored}
-            required
-            helperText='Required for website scraping'
-          />
+          <div className='relative'>
+            <Input
+              value={firecrawlApiKey}
+              onChange={(e) => {
+                setFirecrawlApiKey(e.target.value);
+                setError(null);
+              }}
+              type={showPassword ? "text" : "password"}
+              placeholder='Enter your Firecrawl API key (must start with fc-)'
+              fullWidth
+              disabled={isFirecrawlStored}
+              required
+              error={!!error}
+              helperText={
+                error ||
+                'Required for website scraping. Must start with "fc-". Enter the key exactly as provided.'
+              }
+              className='pr-10'
+            />
+            <button
+              type='button'
+              className='absolute right-4 top-[14px] text-gray-500 hover:text-gray-700 focus:outline-none p-1'
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}>
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
 
           <div className='flex gap-2'>
             {!isFirecrawlStored ? (
@@ -106,56 +136,22 @@ const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onApiKeySet }) => {
         </form>
       </div>
 
-      {/* Anthropic API Key Status */}
-      <div className='bg-gray-50 rounded-md p-4'>
-        <h3 className='text-md font-medium text-gray-900 mb-2'>
-          Anthropic API Key
+      {/* Help Text */}
+      <div className='mt-8 pt-4 border-t border-gray-200'>
+        <h3 className='text-sm font-medium text-gray-700 mb-2'>
+          About API Keys
         </h3>
-        <div className='flex items-center justify-between mb-2'>
-          <span className='text-sm'>Status:</span>
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
-              anthropicKeyStatus === "set"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}>
-            {anthropicKeyStatus === "set" ? "Set in Environment" : "Not Set"}
-          </span>
-        </div>
-
-        {anthropicKeyStatus === "missing" && (
-          <div className='mt-2 text-xs text-red-600 bg-red-50 p-3 rounded-md'>
-            <p className='font-medium mb-1'>
-              Anthropic API key missing in environment variables
-            </p>
-            <p>
-              Add to your{" "}
-              <code className='bg-red-100 px-1 py-0.5 rounded'>.env.local</code>{" "}
-              file:
-            </p>
-            <pre className='mt-1 bg-gray-800 text-white p-2 rounded-md text-xs overflow-x-auto'>
-              NEXT_PUBLIC_ANTHROPIC_API_KEY=your_anthropic_key
-            </pre>
-          </div>
-        )}
-      </div>
-
-      {/* API Keys Status Summary */}
-      <div className='pt-4 border-t border-gray-200'>
-        <div className='flex items-center justify-between'>
-          <span className='text-sm font-medium'>Analysis Ready:</span>
-          <div className='flex items-center gap-2'>
-            <span
-              className={`w-3 h-3 rounded-full ${
-                isFirecrawlStored && anthropicKeyStatus === "set"
-                  ? "bg-green-500"
-                  : "bg-yellow-500"
-              }`}></span>
-            <span className='text-sm font-medium'>
-              {isFirecrawlStored && anthropicKeyStatus === "set" ? "Yes" : "No"}
-            </span>
-          </div>
-        </div>
+        <p className='text-xs text-gray-600'>
+          Enter your Firecrawl API key here. Get your API key from{" "}
+          <a
+            href='https://firecrawl.dev'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-orange-500 hover:text-orange-600'>
+            firecrawl.dev
+          </a>
+          . The key must start with 'fc-'. Enter the key exactly as provided.
+        </p>
       </div>
     </div>
   );

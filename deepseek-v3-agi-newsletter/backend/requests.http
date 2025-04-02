@@ -1,0 +1,16 @@
+### LOCAL
+POST http://localhost:8000/query HTTP/1.1
+Content-Type: application/json
+
+{
+    "query": "How does a long context LLM work?"
+}
+
+
+### PROD
+POST https://researcher-backend-production.up.railway.app/query
+Content-Type: application/json
+
+{
+    "query": "What is the capital of France?"
+}

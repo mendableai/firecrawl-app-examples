@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+input {
+  color: #000000; /* For light mode */
+  background-color: #ffffff;
+}
+
+/* If you're using dark mode */
+@media (prefers-color-scheme: dark) {
+  input {
+    color: #ffffff;
+    background-color: #333333;
+  }
+}

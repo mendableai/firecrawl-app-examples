@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     if (requestData.count > RATE_LIMIT.maxRequests) {
       return NextResponse.json(
-        { error: "Rate limit exceeded. Please try again later." },
+        { error: "Rate limit exceeded. Please try again in a minute." },
         { status: 429 },
       );
     }
@@ -58,22 +58,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate URLs
-    const validUrls = urls.filter((url) => {
+    // Validate URLs and provide specific error messages
+    const validationResults = urls.map((url) => {
       try {
-        new URL(url);
-        return true;
+        const parsedUrl = new URL(url);
+        // Check for common issues
+        if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+          return {
+            isValid: false,
+            url,
+            error: "URL must use HTTP or HTTPS protocol",
+          };
+        }
+        if (
+          parsedUrl.hostname === "localhost" ||
+          parsedUrl.hostname.includes("127.0.0.1")
+        ) {
+          return { isValid: false, url, error: "Local URLs are not supported" };
+        }
+        return { isValid: true, url };
       } catch (e) {
-        return false;
+        return { isValid: false, url, error: "Invalid URL format" };
       }
     });
 
-    if (validUrls.length === 0) {
+    const invalidUrls = validationResults.filter((result) => !result.isValid);
+    if (invalidUrls.length > 0) {
+      const errorMessages = invalidUrls.map(
+        (result) => `${result.url}: ${result.error}`,
+      );
       return NextResponse.json(
-        { error: "No valid URLs provided" },
+        { error: "Invalid URLs detected:\n" + errorMessages.join("\n") },
         { status: 400 },
       );
     }
+
+    const validUrls = validationResults.map((result) => result.url);
 
     // Get API key from request header or fallback to env variable
     const apiKeyHeader = request.headers.get("X-Firecrawl-API-Key");
@@ -146,10 +166,43 @@ export async function POST(request: NextRequest) {
       success: true,
       data: scrapeResult.data,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error extracting content:", error);
+
+    // Handle specific error types
+    if (error.response) {
+      if (error.response.status === 403) {
+        return NextResponse.json(
+          {
+            error:
+              "Access to this URL is forbidden. This could be because:\n1. The website blocks content extraction\n2. The content requires authentication\n3. You don't have permission to access this content",
+          },
+          { status: 403 },
+        );
+      } else if (error.response.status === 404) {
+        return NextResponse.json(
+          {
+            error:
+              "The URL content could not be found. Please:\n1. Check if the URL is correct\n2. Ensure the page is publicly accessible\n3. Try using the main website URL instead",
+          },
+          { status: 404 },
+        );
+      } else if (error.response.status === 401) {
+        return NextResponse.json(
+          {
+            error:
+              "Authentication failed. Please update your Firecrawl API key or check your permissions.",
+          },
+          { status: 401 },
+        );
+      }
+    }
+
     return NextResponse.json(
-      { error: "Failed to extract content from URLs" },
+      {
+        error:
+          "Failed to extract content. Please check if:\n1. The URLs are accessible\n2. You have the correct permissions\n3. The website allows content extraction",
+      },
       { status: 500 },
     );
   }

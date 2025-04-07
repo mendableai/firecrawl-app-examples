@@ -1,14 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast, Toaster } from "react-hot-toast";
-import UrlInput from "./components/UrlInput";
+import UrlInput from "./components/MainForm";
 import ProgressBar from "./components/ProgressBar";
 import PodcastPlayer from "./components/PodcastPlayer";
-import AnimatedSection from "./components/AnimatedSection";
-import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
 import { FiRotateCcw } from "react-icons/fi";
+import ApiKeySidebar from "./components/ApiKeySidebar";
+import BgGradient from "./components/BgGradient";
+import MainForm from "./components/MainForm";
+import Button from "./components/Button";
+import Header from "./components/Header";
+import SubHeader from "./components/SubHeader";
+import IntegrationDetailsGroup from "./components/IntegrationDetailsGroup";
+import OutputSection from "./components/OutputSection";
 
 export default function Home() {
   const [urls, setUrls] = useState<string[]>([]);
@@ -19,14 +26,26 @@ export default function Home() {
   const [audioUrl, setAudioUrl] = useState("");
   const [error, setError] = useState("");
   const [firecrawlApiKey, setFirecrawlApiKey] = useState<string | null>(null);
+  const [apiKeysConfigured, setApiKeysConfigured] = useState(false);
+  const [showOutput, setShowOutput] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const outputSectionRef = useRef<HTMLDivElement>(null);
+  const handleUrlChange = (url: string) => {
+    setUrlInput(url);
+  };
 
-  // Load API key from localStorage on component mount
-  useEffect(() => {
-    const storedApiKey = localStorage.getItem("firecrawl_api_key");
-    if (storedApiKey) {
-      setFirecrawlApiKey(storedApiKey);
-    }
-  }, []);
+  // const handleFormSubmit = () => {
+  //   console.log("Form submitted with URL:", urlInput);
+  //   if (urlInput.trim()) {
+  //     setShowOutput(true);
+  //   }
+  // };
+
+  const handleApiKeySet = (firecrawlKey: string) => {
+    console.log("API Key set:", firecrawlKey.substring(0, 5) + "...");
+    setApiKeysConfigured(true);
+    setFirecrawlApiKey(firecrawlKey);
+  };
 
   const steps = [
     "URL Input",
@@ -35,11 +54,7 @@ export default function Home() {
     "Create Podcast",
   ];
 
-  const handleApiKeySet = (key: string) => {
-    setFirecrawlApiKey(key);
-  };
-
-  const handleSubmit = async (submittedUrls: string[]) => {
+  const handleFormSubmit = async (submittedUrls: string[]) => {
     if (!firecrawlApiKey) {
       toast.error("Please enter your Firecrawl API key first");
       return;
@@ -50,9 +65,14 @@ export default function Home() {
     setCurrentStep(1);
     setError("");
 
+    // Define toast references outside try block so they can be accessed in catch
+    let loadingToast: string | null = null;
+    let scriptToast: string | null = null;
+    let audioToast: string | null = null;
+
     try {
       // Step 1: Extract content from URLs
-      const loadingToast = toast.loading("Extracting content from URLs...");
+      loadingToast = toast.loading("Extracting content from URLs...");
 
       const extractResponse = await fetch("/api/extract", {
         method: "POST",
@@ -63,14 +83,55 @@ export default function Home() {
         body: JSON.stringify({ urls: submittedUrls }),
       });
 
-      const extractData = await extractResponse.json();
+      // Get response text first, then try to parse as JSON
+      const responseText = await extractResponse.text();
+      let extractData;
+
+      try {
+        extractData = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error("Error parsing JSON:", responseText);
+        toast.dismiss(loadingToast);
+        toast.error("Server returned an invalid response. Please try again.");
+        throw new Error(
+          "Failed to parse server response. The server may be experiencing issues with multiple URLs.",
+        );
+      }
 
       if (!extractResponse.ok) {
+        toast.dismiss(loadingToast);
+
         if (extractResponse.status === 429) {
-          toast.dismiss(loadingToast);
           toast.error("Rate limit exceeded. Please try again in a minute.");
           throw new Error("Rate limit exceeded");
+        } else if (extractResponse.status === 403) {
+          toast.error(
+            "Access to this URL is forbidden. The website may block content extraction.",
+          );
+          throw new Error(
+            "URL access forbidden: Content extraction not allowed by the website",
+          );
+        } else if (extractResponse.status === 404) {
+          toast.error(
+            "The URL content could not be found. Please check if the URL is correct.",
+          );
+          throw new Error("URL content not found");
+        } else if (extractResponse.status === 400) {
+          toast.error(
+            "Invalid URL or extraction request. " + (extractData.error || ""),
+          );
+          throw new Error(
+            extractData.error || "Invalid URL or extraction request",
+          );
+        } else if (extractResponse.status === 401) {
+          toast.error(
+            "Invalid or expired API key. Please update your Firecrawl API key.",
+          );
+          throw new Error("Authentication failed: Invalid API key");
         } else {
+          toast.error(
+            extractData.error || "Failed to extract content from URL",
+          );
           throw new Error(extractData.error || "Failed to extract content");
         }
       }
@@ -81,8 +142,9 @@ export default function Home() {
       setCurrentStep(2);
 
       // Step 2: Generate podcast script
-      const scriptToast = toast.loading("Generating podcast script...");
+      scriptToast = toast.loading("Generating podcast script...");
 
+      // Similar JSON parsing protection for script generation
       const scriptResponse = await fetch("/api/generate-script", {
         method: "POST",
         headers: {
@@ -94,14 +156,28 @@ export default function Home() {
         }),
       });
 
-      const scriptData = await scriptResponse.json();
+      const scriptResponseText = await scriptResponse.text();
+      let scriptData;
+
+      try {
+        scriptData = JSON.parse(scriptResponseText);
+      } catch (jsonError) {
+        console.error("Error parsing script JSON:", scriptResponseText);
+        toast.dismiss(scriptToast);
+        toast.error(
+          "Server returned an invalid response for script generation.",
+        );
+        throw new Error("Failed to parse script generation response.");
+      }
 
       if (!scriptResponse.ok) {
+        toast.dismiss(scriptToast);
+
         if (scriptResponse.status === 429) {
-          toast.dismiss(scriptToast);
           toast.error("Rate limit exceeded. Please try again in a minute.");
           throw new Error("Rate limit exceeded");
         } else {
+          toast.error(scriptData.error || "Failed to generate script");
           throw new Error(scriptData.error || "Failed to generate script");
         }
       }
@@ -112,7 +188,7 @@ export default function Home() {
       setCurrentStep(3);
 
       // Step 3: Generate audio
-      const audioToast = toast.loading("Creating podcast audio with Firo...");
+      audioToast = toast.loading("Creating podcast audio with Firo...");
 
       // Truncate script if it's too long for the audio API (5000 char limit)
       const MAX_SCRIPT_LENGTH = 4800; // Setting slightly below 5000 to be safe
@@ -151,7 +227,19 @@ export default function Home() {
         body: JSON.stringify({ script: processedScript }),
       });
 
-      const audioData = await audioResponse.json();
+      const audioResponseText = await audioResponse.text();
+      let audioData;
+
+      try {
+        audioData = JSON.parse(audioResponseText);
+      } catch (jsonError) {
+        console.error("Error parsing audio JSON:", audioResponseText);
+        toast.dismiss(audioToast);
+        toast.error(
+          "Server returned an invalid response for audio generation.",
+        );
+        throw new Error("Failed to parse audio generation response.");
+      }
 
       if (!audioResponse.ok) {
         // If we have a 429 (rate limit) with partial audio segments
@@ -225,6 +313,12 @@ export default function Home() {
       }
     } catch (err: any) {
       console.error("Error in podcast generation:", err);
+
+      // Dismiss any active toasts to prevent them from persisting
+      if (loadingToast) toast.dismiss(loadingToast);
+      if (scriptToast) toast.dismiss(scriptToast);
+      if (audioToast) toast.dismiss(audioToast);
+
       setError(err.message || "An error occurred");
       toast.error(err.message || "Failed to create podcast");
     } finally {
@@ -252,159 +346,187 @@ export default function Home() {
   };
 
   return (
-    <div className='min-h-screen py-8 px-4'>
-      <Toaster position='top-center' />
+    <>
+      <Navbar appName='URL to Podcast' appNameColor='black' />
+      <ApiKeySidebar
+        onApiKeySet={handleApiKeySet}
+        apiKeysConfigured={apiKeysConfigured}
+      />
+      <BgGradient>
+        <div className='min-h-screen flex flex-col'>
+          <div className='flex-1'>
+            <Header content='URL to Podcast' />
+            <SubHeader content='Convert any URL to a realistic podcast with Firecrawl!' />
 
-      {/* Sidebar for API key configuration */}
-      <Sidebar apiKey={firecrawlApiKey} onApiKeySet={handleApiKeySet} />
-
-      <AnimatedSection className='text-center mb-12' delay={0.1}>
-        <h1 className='text-5xl font-extrabold orange-gradient-text mb-2'>
-          URL to Podcast Converter
-        </h1>
-        <p className='text-gray-600 max-w-lg mx-auto'>
-          Transform any webpage content into an engaging podcast with just a few
-          clicks!
-        </p>
-        <div className='flex flex-wrap justify-center gap-4 mb-10 mt-6'>
-          <span className='inline-flex items-center text-sm font-medium px-4 py-2 rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200'>
-            <span className='w-2 h-2 rounded-full bg-orange-500 mr-2'></span>
-            Powered by Anthropic Claude 3.7
-          </span>
-          <span className='inline-flex items-center text-sm font-medium px-4 py-2 rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200'>
-            <span className='w-2 h-2 rounded-full bg-orange-500 mr-2'></span>
-            Firecrawl Integration
-          </span>
-        </div>
-      </AnimatedSection>
-
-      {/* API Key notification when not set */}
-      {!firecrawlApiKey && (
-        <AnimatedSection
-          className='mb-8 p-4 bg-orange-50 border border-orange-100 rounded-lg max-w-3xl mx-auto flex items-center justify-center'
-          delay={0.2}>
-          <p className='text-[var(--primary-dark)]'>
-            Please configure your API key in settings to get started
-          </p>
-        </AnimatedSection>
-      )}
-
-      {/* Progress Bar (show only when process started) */}
-      {currentStep > 0 && (
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}>
-            <ProgressBar
-              steps={steps}
-              currentStep={currentStep - 1}
-              isProcessing={isProcessing}
+            <IntegrationDetailsGroup
+              items={["🔥 Firecrawl", "Claude 3.7", "ElevenLabs"]}
             />
-          </motion.div>
-        </AnimatePresence>
-      )}
 
-      {/* Main Content */}
-      <AnimatePresence mode='wait'>
-        {currentStep === 0 ? (
-          <motion.div
-            key='urlInput'
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.3 }}>
-            <UrlInput onSubmit={handleSubmit} isProcessing={isProcessing} />
-          </motion.div>
-        ) : currentStep === 4 ? (
-          <motion.div
-            key='podcastPlayer'
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}>
-            {audioUrl && (
-              <>
-                <PodcastPlayer
-                  audioUrl={audioUrl}
-                  title={
-                    urls.length > 1
-                      ? `Combined Podcast from Multiple Sources`
-                      : `Podcast from ${urls[0]}`
+            <MainForm
+              areApiKeysSet={apiKeysConfigured}
+              onUrlChange={handleUrlChange}
+              onFormSubmit={(submittedUrls) => {
+                if (submittedUrls && submittedUrls.length > 0) {
+                  handleFormSubmit(submittedUrls);
+                }
+              }}
+              customButton={
+                <Button
+                  type='submit'
+                  size='lg'
+                  variant='primary'
+                  buttonContent={
+                    !apiKeysConfigured
+                      ? "Please Configure Your API Keys"
+                      : isProcessing
+                      ? "Generating Podcast..."
+                      : "Generate Podcast"
                   }
-                  sourceUrls={urls}
+                  fullWidth
+                  className='h-16 text-lg'
+                  disabled={
+                    !apiKeysConfigured || !urlInput.trim() || isProcessing
+                  }
                 />
-                {podcastScript && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className='mt-8 p-6 bg-white rounded-lg shadow-md max-w-3xl mx-auto'>
-                    <h3 className='text-xl font-semibold mb-4'>
-                      Podcast Script
-                    </h3>
-                    <div className='prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap'>
-                      {podcastScript}
-                    </div>
-                  </motion.div>
-                )}
-                <div className='flex justify-center mt-8'>
-                  <motion.button
-                    onClick={resetProcess}
-                    className='flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors'
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}>
-                    <FiRotateCcw />
-                    Convert Another URL
-                  </motion.button>
-                </div>
-              </>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key='processing'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className='card p-8 max-w-3xl mx-auto text-center'>
-            <div className='mb-6'>
-              <div className='animate-pulse-slow'>
-                <div className='w-16 h-16 bg-[var(--primary-light)] rounded-full mx-auto flex items-center justify-center'>
-                  <div className='w-10 h-10 bg-[var(--primary)] rounded-full animate-ping'></div>
-                </div>
-              </div>
-              <h3 className='text-2xl font-bold mt-4 orange-gradient-text'>
-                {currentStep === 1
-                  ? "Extracting Content..."
-                  : currentStep === 2
-                  ? "Generating Podcast Script..."
-                  : "Creating Audio..."}
-              </h3>
-              <p className='text-gray-500 mt-2'>
-                This may take a moment, please wait...
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              }
+              outputSectionRef={outputSectionRef}
+            />
 
-      {/* Error Display */}
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className='mt-8 p-4 bg-red-50 border border-red-200 rounded-lg max-w-3xl mx-auto'>
-          <h3 className='text-red-700 font-medium'>Error</h3>
-          <p className='text-red-600'>{error}</p>
-          <button
-            onClick={resetProcess}
-            className='mt-2 text-red-700 underline'>
-            Reset and try again
-          </button>
-        </motion.div>
-      )}
-    </div>
+            {/* Output Section for Results */}
+            {(isProcessing || currentStep > 0) && (
+              <OutputSection
+                ref={outputSectionRef}
+                title={
+                  currentStep === 4
+                    ? "Your Podcast is Ready!"
+                    : "Generating Podcast..."
+                }>
+                {/* Progress Bar */}
+                {isProcessing && (
+                  <div className='my-10 mx-auto max-w-xl'>
+                    <ProgressBar
+                      steps={steps}
+                      currentStep={currentStep}
+                      isProcessing={isProcessing}
+                    />
+                  </div>
+                )}
+
+                {/* Error Display */}
+                {error && (
+                  <div className='bg-red-50 border-l-4 border-red-500 p-4 mb-6'>
+                    <div className='flex'>
+                      <div className='ml-3'>
+                        <p className='text-sm font-medium text-red-800 mb-1'>
+                          Error:
+                        </p>
+                        <p className='text-sm text-red-700 mb-2'>{error}</p>
+
+                        {/* Show tips based on error type */}
+                        {error.includes("forbidden") && (
+                          <div className='text-xs text-gray-700 mt-2'>
+                            <p className='font-medium mb-1'>
+                              Possible solutions:
+                            </p>
+                            <ul className='list-disc pl-4 space-y-1'>
+                              <li>Try a different URL from the same website</li>
+                              <li>
+                                Some websites block automated content extraction
+                              </li>
+                              <li>
+                                Consider using a public website or one that
+                                allows content scraping
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+
+                        {error.includes("not found") && (
+                          <div className='text-xs text-gray-700 mt-2'>
+                            <p className='font-medium mb-1'>
+                              Possible solutions:
+                            </p>
+                            <ul className='list-disc pl-4 space-y-1'>
+                              <li>
+                                Check if the URL is correct and accessible in a
+                                browser
+                              </li>
+                              <li>
+                                Ensure the page is publicly available (not
+                                behind a login)
+                              </li>
+                              <li>
+                                Try using the homepage URL instead of a deep
+                                link
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+
+                        {error.includes("Invalid") && (
+                          <div className='text-xs text-gray-700 mt-2'>
+                            <p className='font-medium mb-1'>
+                              Possible solutions:
+                            </p>
+                            <ul className='list-disc pl-4 space-y-1'>
+                              <li>
+                                Make sure the URL includes http:// or https://
+                              </li>
+                              <li>Check for typos in the domain name</li>
+                              <li>
+                                Try a different URL from a public, accessible
+                                website
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Podcast Player */}
+                {audioUrl && currentStep === 4 && (
+                  <div className='mt-4'>
+                    <PodcastPlayer
+                      audioUrl={audioUrl}
+                      title={
+                        urls.length > 0
+                          ? `Podcast from ${urls[0]}`
+                          : "Generated Podcast"
+                      }
+                      sourceUrls={urls}
+                    />
+
+                    {/* Display the podcast script */}
+                    {podcastScript && (
+                      <div className='mt-8 mb-4'>
+                        <h3 className='text-xl font-semibold mb-4'>
+                          Podcast Script
+                        </h3>
+                        <div className='bg-white/70 backdrop-blur-sm rounded-xl p-4 text-gray-700 whitespace-pre-wrap text-left'>
+                          {podcastScript}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className='mt-6 text-center'>
+                      <Button
+                        variant='outline'
+                        onClick={resetProcess}
+                        className='flex items-center mx-auto'>
+                        <FiRotateCcw className='mr-2' /> Generate Another
+                        Podcast
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </OutputSection>
+            )}
+          </div>
+        </div>
+      </BgGradient>
+      <Toaster position='top-center' />
+    </>
   );
 }

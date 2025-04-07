@@ -1,136 +1,180 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { FiKey, FiInfo, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import Button from "./Button";
 import { Input } from "./Input";
-import { Button } from "./Button";
+import { apiService } from "../services/api";
+import { Eye, EyeOff } from "lucide-react";
 
 interface ApiKeyFormProps {
-  onApiKeySet: (key: string) => void;
+  onApiKeySet: (firecrawlKey: string) => void;
 }
 
-export default function ApiKeyForm({ onApiKeySet }: ApiKeyFormProps) {
-  const [apiKey, setApiKey] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [error, setError] = useState("");
-  const [isValidating, setIsValidating] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+const ApiKeyForm: React.FC<ApiKeyFormProps> = ({ onApiKeySet }) => {
+  const [firecrawlApiKey, setFirecrawlApiKey] = useState("");
+  const [isFirecrawlStored, setIsFirecrawlStored] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
+  // Check if API keys exist on component mount
   useEffect(() => {
-    // Check localStorage for API key
-    const storedApiKey = localStorage.getItem("firecrawl_api_key");
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-      handleSubmit(null, storedApiKey); // Validate the stored key
+    const storedFirecrawlKey = apiService.getFirecrawlApiKey();
+
+    if (storedFirecrawlKey) {
+      setFirecrawlApiKey(storedFirecrawlKey);
+      setIsFirecrawlStored(true);
+      onApiKeySet(storedFirecrawlKey);
     }
-  }, []);
+  }, [onApiKeySet]);
 
-  const handleSubmit = async (
-    e: React.FormEvent | null,
-    keyOverride?: string,
-  ) => {
-    if (e) e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
 
-    const keyToUse = keyOverride || apiKey;
-    if (!keyToUse) {
-      setError("Please enter your Firecrawl API key");
+    // Remove all whitespace from the key
+    const cleanKey = firecrawlApiKey.trim().replace(/\s+/g, "");
+
+    if (!cleanKey) {
+      setError("API key is required");
       return;
     }
 
-    setIsValidating(true);
-    setError("");
+    // Validate key format
+    if (!cleanKey.startsWith("fc-")) {
+      setError(
+        "Invalid API key format. The key must start with 'fc-'. Please copy the complete key from firecrawl.dev",
+      );
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      // Validate the API key
+      // Validate the API key with the server
       const response = await fetch("/api/validate-key", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ apiKey: keyToUse }),
+        body: JSON.stringify({ apiKey: cleanKey }),
       });
 
       const data = await response.json();
 
-      if (response.ok && data.valid) {
-        setIsSuccess(true);
-        localStorage.setItem("firecrawl_api_key", keyToUse);
-        onApiKeySet(keyToUse);
-      } else {
-        setError(data.message || "Invalid API key. Please try again.");
-        setIsSuccess(false);
+      if (!response.ok) {
+        if (response.status === 500) {
+          throw new Error(
+            "Server error. Please check your API key and ensure you have the correct permissions. If the issue persists, try updating your API key from firecrawl.dev",
+          );
+        }
+        throw new Error(data.message || "Failed to validate API key");
       }
-    } catch (err) {
-      setError("Error validating API key. Please try again.");
-      setIsSuccess(false);
+
+      // Store Firecrawl API key
+      apiService.setFirecrawlApiKey(cleanKey);
+      setIsFirecrawlStored(true);
+      onApiKeySet(cleanKey);
+    } catch (error: any) {
+      console.error("Failed to set API key:", error);
+      setError(
+        error.message ||
+          "Unable to validate API key. Please ensure you have:\n1. Copied the complete key from firecrawl.dev\n2. Have the correct permissions\n3. The URLs you're trying to access are allowed",
+      );
     } finally {
-      setIsValidating(false);
+      setIsLoading(false);
     }
   };
 
-  const toggleShowApiKey = () => {
-    setShowApiKey(!showApiKey);
+  const handleClearFirecrawlKey = () => {
+    apiService.clearFirecrawlApiKey();
+    setFirecrawlApiKey("");
+    setIsFirecrawlStored(false);
+    setError(null);
   };
 
   return (
-    <div className='space-y-4'>
-      <div className='mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2'>
-        <FiInfo className='text-blue-500 mt-1 flex-shrink-0' size={14} />
-        <p className='text-xs text-blue-700'>
-          Get your Firecrawl API key at{" "}
+    <div className='space-y-6'>
+      {/* Firecrawl API Key Form */}
+      <div className='bg-white rounded-md'>
+        <h3 className='text-md font-medium text-gray-900 mb-2'>
+          Firecrawl API Key
+        </h3>
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          <div className='relative'>
+            <Input
+              value={firecrawlApiKey}
+              onChange={(e) => {
+                setFirecrawlApiKey(e.target.value);
+                setError(null);
+              }}
+              type={showPassword ? "text" : "password"}
+              placeholder='Enter your Firecrawl API key (must start with fc-)'
+              fullWidth
+              disabled={isFirecrawlStored}
+              required
+              error={!!error}
+              helperText={
+                error ||
+                'Required for website scraping. Must start with "fc-". Enter the key exactly as provided.'
+              }
+              className='pr-10'
+            />
+            <button
+              type='button'
+              className='absolute right-4 top-[14px] text-gray-500 hover:text-gray-700 focus:outline-none p-1'
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}>
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          <div className='flex gap-2'>
+            {!isFirecrawlStored ? (
+              <Button
+                type='submit'
+                isLoading={isLoading}
+                fullWidth
+                size='sm'
+                squared>
+                Save Key
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant='outline'
+                  onClick={handleClearFirecrawlKey}
+                  size='sm'
+                  squared>
+                  Change
+                </Button>
+                <Button disabled size='sm' className='flex-1' squared>
+                  Key Saved ✓
+                </Button>
+              </>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Help Text */}
+      <div className='mt-8 pt-4 border-t border-gray-200'>
+        <h3 className='text-sm font-medium text-gray-700 mb-2'>
+          About API Keys
+        </h3>
+        <p className='text-xs text-gray-600'>
+          Enter your Firecrawl API key here. Get your API key from{" "}
           <a
             href='https://firecrawl.dev'
             target='_blank'
             rel='noopener noreferrer'
-            className='text-blue-600 underline hover:text-blue-800'>
+            className='text-orange-500 hover:text-orange-600'>
             firecrawl.dev
           </a>
+          . The key must start with 'fc-'. Enter the key exactly as provided.
         </p>
       </div>
-
-      <form onSubmit={handleSubmit}>
-        <div className='relative'>
-          <Input
-            type={showApiKey ? "text" : "password"}
-            value={apiKey}
-            onChange={(e) => {
-              setApiKey(e.target.value);
-              setError("");
-              setIsSuccess(false);
-            }}
-            placeholder='Your Firecrawl API key'
-            fullWidth
-            className='pr-12'
-            error={error}
-            inputSize='md'
-            required
-          />
-          <button
-            type='button'
-            onClick={toggleShowApiKey}
-            className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600'
-            aria-label={showApiKey ? "Hide API key" : "Show API key"}>
-            {showApiKey ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-          </button>
-        </div>
-
-        <div className='flex justify-end mt-4'>
-          <Button
-            type='submit'
-            disabled={isValidating || isSuccess}
-            isLoading={isValidating}
-            variant='primary'
-            className='w-full'>
-            {isSuccess ? (
-              <span className='flex items-center justify-center'>
-                <FiCheck className='mr-2' /> Validated
-              </span>
-            ) : (
-              "Save API Key"
-            )}
-          </Button>
-        </div>
-      </form>
     </div>
   );
-}
+};
+
+export default ApiKeyForm;

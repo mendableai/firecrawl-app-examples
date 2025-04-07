@@ -10,7 +10,6 @@ interface CardProps {
   footer?: React.ReactNode;
   bordered?: boolean;
   hoverable?: boolean;
-  accent?: boolean;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -20,8 +19,7 @@ const Card: React.FC<CardProps> = ({
   subtitle,
   footer,
   bordered = true,
-  hoverable = true,
-  accent = false,
+  hoverable = false,
 }) => {
   // Check if the card has a transparent background by looking for bg-white/60 or similar patterns
   const isTransparent =
@@ -31,13 +29,12 @@ const Card: React.FC<CardProps> = ({
     clsx(
       "rounded-xl overflow-hidden transition-all duration-300",
       {
-        "bg-[var(--card-bg)]": !isTransparent,
-        "border border-[var(--card-border)]": bordered && !isTransparent,
+        "bg-white": !isTransparent,
+        "border border-gray-200": bordered && !isTransparent,
         "border border-white/20": bordered && isTransparent,
-        "shadow-md": !isTransparent,
+        "shadow-sm": !isTransparent,
         "shadow-lg backdrop-blur-sm": isTransparent,
-        "hover:shadow-xl hover:-translate-y-1": hoverable,
-        "border-l-4 border-l-[var(--primary)]": accent,
+        "hover:shadow-md transform hover:-translate-y-1": hoverable,
       },
       className,
     ),
@@ -46,23 +43,21 @@ const Card: React.FC<CardProps> = ({
   return (
     <div className={cardClasses}>
       {(title || subtitle) && (
-        <div className={`p-6 ${subtitle ? "pb-3" : ""}`}>
+        <div className='px-6 pt-5 pb-3'>
           {title && (
-            <h3 className='text-xl font-semibold orange-gradient-text'>
+            <h3 className='text-xl font-semibold text-[var(--foreground)]'>
               {title}
             </h3>
           )}
           {subtitle && <p className='text-sm text-gray-500 mt-1'>{subtitle}</p>}
         </div>
       )}
-      <div className={`px-6 py-4 ${!title && !subtitle ? "pt-6" : ""}`}>
-        {children}
-      </div>
+      <div className='px-6 py-4'>{children}</div>
       {footer && (
         <div
           className={`px-6 py-4 ${
-            isTransparent ? "bg-gray-50/50" : "bg-gray-50/80"
-          } border-t border-[var(--card-border)]`}>
+            isTransparent ? "bg-gray-50/50" : "bg-gray-50"
+          } border-t border-gray-100`}>
           {footer}
         </div>
       )}

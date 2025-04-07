@@ -347,7 +347,7 @@ export default function Home() {
 
   return (
     <>
-      <Navbar appName='Sample App' appNameColor='black' />
+      <Navbar appName='URL to Podcast' appNameColor='black' />
       <ApiKeySidebar
         onApiKeySet={handleApiKeySet}
         apiKeysConfigured={apiKeysConfigured}

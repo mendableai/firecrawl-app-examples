@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({
-  appName = "Sample App",
+  appName = "URL to Podcast",
   appNameColor = "text-[var(--primary)]",
 }) => {
   return (

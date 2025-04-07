@@ -1,60 +1,24 @@
-import FirecrawlApp from "@mendable/firecrawl-js";
 
 class ApiService {
-  private firecrawlApiKey: string | null = null;
-  private firecrawlClient: FirecrawlApp | null = null;
+  private FIRECRAWL_API_KEY_STORAGE_KEY = "firecrawl-api-key";
 
-  constructor() {
-    // Initialize from localStorage if available
-    if (typeof window !== "undefined") {
-      const storedFirecrawlKey = localStorage.getItem("firecrawl_api_key");
-      this.firecrawlApiKey = storedFirecrawlKey || null;
-
-      // Initialize client if key is available
-      this.initializeClient();
-    }
-  }
-
-  private initializeClient() {
-    if (this.firecrawlApiKey) {
-      this.firecrawlClient = new FirecrawlApp({
-        apiKey: this.firecrawlApiKey.startsWith("fc-")
-          ? this.firecrawlApiKey
-          : `fc-${this.firecrawlApiKey}`,
-      });
-    }
-  }
-
-  setFirecrawlApiKey(apiKey: string) {
-    this.firecrawlApiKey = apiKey;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("firecrawl_api_key", apiKey);
-    }
-
-    // Re-initialize the client with the new key
-    if (apiKey) {
-      this.firecrawlClient = new FirecrawlApp({
-        apiKey: apiKey.startsWith("fc-") ? apiKey : `fc-${apiKey}`,
-      });
-    } else {
-      this.firecrawlClient = null;
-    }
-
-    return this;
-  }
-
+  // Fetch the Firecrawl API key from local storage
   getFirecrawlApiKey(): string | null {
-    return this.firecrawlApiKey;
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(this.FIRECRAWL_API_KEY_STORAGE_KEY);
   }
 
-  getFirecrawlClient(): FirecrawlApp | null {
-    return this.firecrawlClient;
+  // Store the Firecrawl API key in local storage
+  setFirecrawlApiKey(key: string): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(this.FIRECRAWL_API_KEY_STORAGE_KEY, key);
   }
 
-  hasFirecrawlApiKey(): boolean {
-    return !!this.firecrawlApiKey;
+  // Clear the Firecrawl API key from local storage
+  clearFirecrawlApiKey(): void {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(this.FIRECRAWL_API_KEY_STORAGE_KEY);
   }
 }
 
-const apiService = new ApiService();
-export default apiService;
+export const apiService = new ApiService();

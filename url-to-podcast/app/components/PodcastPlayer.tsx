@@ -292,14 +292,12 @@ export default function PodcastPlayer({
             <FiSkipForward size={20} />
           </Button>
 
-          <Button
-            as='a'
+          <a
             href={audioUrl}
             download
-            variant='outline'
-            className='ml-auto text-slate-700'>
+            className='ml-auto px-4 py-2 border-2 border-[var(--primary)] text-[var(--primary)] hover:border-[var(--primary-dark)] hover:shadow-md rounded-md font-medium flex items-center transition-all transform hover:scale-[1.02]'>
             <FiDownload className='mr-2' size={16} /> Download
-          </Button>
+          </a>
         </div>
       </Card>
     </motion.div>

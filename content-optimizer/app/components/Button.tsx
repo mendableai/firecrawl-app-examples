@@ -11,7 +11,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   fullWidth?: boolean;
   squared?: boolean;
-  children: React.ReactNode;
+  buttonContent?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -22,6 +23,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       isLoading = false,
       fullWidth = false,
       squared = false,
+      buttonContent,
       children,
       className,
       disabled,
@@ -32,7 +34,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles =
       "font-medium transition-all transform hover:scale-[1.03] active:scale-[0.98] focus:outline-none inline-flex justify-center items-center";
 
-    const roundedStyle = squared ? "rounded-md" : "rounded-full";
+    const roundedStyle = squared ? "rounded-md" : "rounded-md";
 
     const variantStyles = {
       primary: "bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)]",
@@ -67,6 +69,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ),
     );
 
+    // Use buttonContent prop if provided, otherwise use children
+    const displayContent = buttonContent || children;
+
     return (
       <button
         ref={ref}
@@ -95,7 +100,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             Loading...
           </span>
         ) : (
-          children
+          displayContent
         )}
       </button>
     );

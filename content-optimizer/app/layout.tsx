@@ -1,23 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Key } from "lucide-react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "Content Optimizer| Improve Your Hero Section",
-  description:
-    "Analyze your website's hero section and get actionable insights based on top CRO practices",
-  keywords: "CRO, Conversion Rate Optimization, Hero Section, Web Analysis",
+  title: "Content Optimizer by Firecrawl",
+  description: "Optimize your hero, headlines, and CTAs with content from the best sites.",
 };
 
 export default function RootLayout({
@@ -27,33 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className='min-h-screen flex flex-col'>
-          <header className='bg-white py-3'>
-            <div className='container mx-auto px-4 flex justify-between items-center'>
-              <h1 className='text-xl font-bold text-[var(--primary)]'>
-                🔥 Content Optimizer
-              </h1>
-              <nav>
-                <a
-                  href='https://firecrawl.dev'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-[var(--foreground)] hover:text-[var(--primary)] transition-colors flex items-center gap-2'>
-                  <Key size={16} className='text-orange-500' />
-                  Get Your Firecrawl API Keys
-                </a>
-              </nav>
-            </div>
-          </header>
-          <main className='flex-grow'>{children}</main>
-          <footer className='bg-[var(--tertiary)] py-3'>
-            <div className='container mx-auto px-4 text-center'>
-              {/* Empty footer */}
-            </div>
-          </footer>
-        </div>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        {children}
       </body>
     </html>
   );

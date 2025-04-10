@@ -85,7 +85,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
       <div className='absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-orange-200/30 blur-[150px] dark:bg-orange-300/20 z-0'></div>
       <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-orange-100/20 blur-[130px] dark:bg-orange-200/10 z-0'></div>
 
-      <AnimatedSection delay={0.2}>
+      <AnimatedSection delay={0.1} immediate={true}>
         <h2 className='text-2xl font-bold text-center mb-8'>
           Analysis Results for{" "}
           <span className='text-[var(--primary)]'>{scrapedData.title}</span>
@@ -95,7 +95,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
       <div className='relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6'>
         {/* Left Column: Score, Strengths, Weaknesses */}
         <div className='col-span-1 lg:col-span-5'>
-          <AnimatedSection delay={0.4}>
+          <AnimatedSection delay={0.2} immediate={true}>
             <Card
               title='CRO Score'
               className='relative overflow-hidden bg-white/80 backdrop-blur-sm dark:bg-gray-800/70 shadow-xl border-white/30'>
@@ -106,7 +106,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
           </AnimatedSection>
 
           <div className='grid grid-cols-1 gap-6 mt-6'>
-            <AnimatedSection delay={0.6}>
+            <AnimatedSection delay={0.3} immediate={true}>
               <Card
                 title='Strengths'
                 className='h-full bg-white/80 backdrop-blur-sm dark:bg-gray-800/70 shadow-xl border-white/30'>
@@ -135,7 +135,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
               </Card>
             </AnimatedSection>
 
-            <AnimatedSection delay={0.8}>
+            <AnimatedSection delay={0.4} immediate={true}>
               <Card
                 title='Areas to Improve'
                 className='h-full bg-white/80 backdrop-blur-sm dark:bg-gray-800/70 shadow-xl border-white/30'>
@@ -169,7 +169,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
         {/* Right Column: Recommendations */}
         <div className='col-span-1 lg:col-span-7'>
-          <AnimatedSection delay={0.7}>
+          <AnimatedSection delay={0.3} immediate={true}>
             <Card
               title='Recommendations'
               className='overflow-hidden relative bg-white/80 backdrop-blur-sm dark:bg-gray-800/70 shadow-xl border-white/30'>
@@ -189,7 +189,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             </Card>
           </AnimatedSection>
 
-          <AnimatedSection delay={1.2}>
+          <AnimatedSection delay={0.5} immediate={true}>
             <div className='text-center mt-6'>
               <h3 className='text-lg font-medium mb-2'>Extracted Content</h3>
               <div className='text-sm text-gray-600 p-4 bg-gray-50/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-200/50 dark:border-gray-700/50'>

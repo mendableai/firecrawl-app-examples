@@ -145,12 +145,18 @@ class ApiService {
       console.log(`Scraping website: ${url}`);
 
       // Use the Firecrawl extract API to get structured data
-      const extractionPrompt = `
-        Extract key information from this website's landing page for conversion rate optimization analysis.
-        Focus on the main headline, subheadline, call-to-action text, any hero image, and the entire page content.
-        Provide a detailed summary of the main content in the contentSummary field, including main value propositions,
-        features, benefits, and any additional sections that would be important for conversion rate optimization.
-      `;
+      const extractionPrompt = `Analyze the landing page of this website for conversion rate optimization (CRO). Focus on extracting the following key elements:
+	1.	Main Headline: Summarize the core message that captures visitors' attention.
+	2.	Subheadline: Capture any additional clarifying or supporting message beneath the main headline.
+	3.	Call-to-Action (CTA) Text: Identify any calls to action, buttons, or links that prompt user engagement.
+	4.	Hero Image: Describe any prominent images, graphics, or visuals used at the top of the page, especially those that support the message.
+	5.	Content Summary: Provide a detailed summary of the entire page's content, including the following:
+	•	Value Propositions: Main reasons why visitors should use the product or service.
+	•	Features: List of product or service features highlighted on the page.
+	•	Benefits: How the product/service benefits the target audience.
+	•	Additional Sections: Any other sections that support user conversion, such as testimonials, social proof, trust signals, or pricing.
+
+Conversion Rate Optimization (CRO) Focus: Provide insights into how each element can be optimized to increase conversions, including recommendations for improving the headline, CTA, or other aspects based on common CRO best practices.`;
 
       console.log("Making Firecrawl API call with key format:", {
         keyLength: this.firecrawlApiKey.length,
@@ -195,29 +201,53 @@ class ApiService {
         content: scrapeResult.data.contentSummary || "No content found",
       };
     } catch (error: any) {
-      // Enhanced error logging
-      console.error("Error scraping website:", {
-        error: {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-          code: error.code,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          details: error.details || {},
-        },
-        url,
-        firecrawlKeyStatus: {
-          length: this.firecrawlApiKey?.length,
-          hasPrefix: this.firecrawlApiKey?.startsWith("fc-"),
-        },
+      // Enhanced error logging with better handling of empty objects
+      // Create a custom error with more context if the original error is empty
+      if (!error || Object.keys(error).length === 0) {
+        error = new Error(
+          "Unknown Firecrawl error - possibly blocked by target website",
+        );
+        error.name = "FirecrawlAccessError";
+      }
+
+      // Add specific error types for status codes and common errors
+      const originalMessage = error.message || "Unknown error";
+
+      if (
+        error.message?.includes("status code 400") ||
+        error.message?.includes("Request failed with status code 400") ||
+        error.response?.status === 400 ||
+        error.status === 400
+      ) {
+        error.name = "WebsiteAccessDeniedError";
+        error.message =
+          "This website blocks web scraping or has restricted access. Please try a different site.";
+      } else if (
+        error.message?.toLowerCase().includes("forbidden") ||
+        error.message?.toLowerCase().includes("access denied") ||
+        error.response?.status === 403 ||
+        error.status === 403
+      ) {
+        error.name = "WebsiteAccessDeniedError";
+        error.message =
+          "This website blocks web scraping. Please try a different site.";
+      }
+
+      // Log technical details only for developers - this won't be visible to users
+      // For user-facing errors, we'll display a friendly message in the UI
+      console.debug(`[Developer] Firecrawl error details for URL ${url}:`, {
+        originalError: originalMessage,
+        errorName: error.name,
+        userMessage: error.message,
+        responseStatus: error.response?.status || error.status,
+        responseData: error.response?.data,
+        stack: error.stack?.split("\n").slice(0, 3).join("\n"), // Just show first few lines of stack
       });
 
-      // For demo purposes, return mock data if API fails
-      if (process.env.NODE_ENV === "development") {
-        console.log("Using demo data since API call failed");
-        return this.getMockScrapedData(url);
+      // Ensure the error has a message
+      if (!error.message) {
+        error.message =
+          "Failed to scrape website - the site may be blocking access";
       }
 
       throw error;
@@ -228,41 +258,25 @@ class ApiService {
     try {
       const response = await axios.post("/api/analyze", { scrapedData });
       return response.data;
-    } catch (error) {
-      console.error("Error analyzing with server-side Anthropic:", error);
-      return this.getFallbackAnalysis();
+    } catch (error: any) {
+      // Use developer-friendly logging that won't appear prominently in console
+      const originalMessage = error?.message || "Unknown error";
+
+      console.debug("[Developer] Error analyzing with server-side API:", {
+        originalError: originalMessage,
+        status: error?.response?.status,
+        data: error?.response?.data,
+      });
+
+      // Ensure error has a user-friendly message
+      if (!error) {
+        error = new Error("Failed to analyze content. Please try again.");
+      } else if (!error.message) {
+        error.message = "Error during content analysis. Please try again.";
+      }
+
+      throw error;
     }
-  }
-
-  private getMockScrapedData(url: string): ScrapedData {
-    return {
-      title: "Example Landing Page",
-      headline: "Transform Your Website's Conversion Rate",
-      subheadline: "AI-Powered Analysis & Recommendations",
-      ctaText: "Get Started",
-      content: "This is a mock content summary for development purposes.",
-    };
-  }
-
-  private getFallbackAnalysis(): AnalysisResult {
-    return {
-      score: 76,
-      strengths: [
-        "Clear headline that communicates value proposition",
-        "Contrasting CTA button that stands out",
-      ],
-      weaknesses: [
-        "Subheadline is too long and doesn't reinforce the headline",
-        "CTA text is generic and doesn't inspire action",
-      ],
-      recommendations: [
-        "Shorten the subheadline to focus on key benefits",
-        "Use more specific, action-oriented CTA text",
-        "Add social proof elements near the CTA",
-      ],
-      insights:
-        "The hero section has good foundational elements but needs refinement to maximize conversion potential. The headline effectively communicates the value proposition, but the supporting elements need to be strengthened to reinforce the core message and drive action.",
-    };
   }
 }
 

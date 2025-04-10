@@ -16,6 +16,7 @@
     "framer-motion": "^11.1.0",
     "gsap": "^3.12.5",
     "lucide-react": "^0.482.0",
+    "motion": "^12.6.3",
     "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

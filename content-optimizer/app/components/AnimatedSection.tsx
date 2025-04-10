@@ -14,6 +14,7 @@ interface AnimatedSectionProps {
   triggerPosition?: string;
   duration?: number;
   from?: any;
+  immediate?: boolean;
 }
 
 const defaultFrom = {
@@ -28,6 +29,7 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
   triggerPosition = "top 80%",
   duration = 0.8,
   from = defaultFrom,
+  immediate = false,
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -35,29 +37,39 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
     if (!sectionRef.current) return;
 
     const element = sectionRef.current;
+    let anim;
 
-    // Create animation on component mount
-    const anim = gsap.fromTo(element, from, {
-      y: 0,
-      opacity: 1,
-      duration: duration,
-      delay: delay,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: element,
-        start: triggerPosition,
-        toggleActions: "play none none none",
-      },
-    });
+    if (immediate) {
+      anim = gsap.fromTo(element, from, {
+        y: 0,
+        opacity: 1,
+        duration: duration,
+        delay: delay,
+        ease: "power2.out",
+      });
+    } else {
+      anim = gsap.fromTo(element, from, {
+        y: 0,
+        opacity: 1,
+        duration: duration,
+        delay: delay,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: triggerPosition,
+          toggleActions: "play none none none",
+        },
+      });
+    }
 
     // Clean up animation on component unmount
     return () => {
       anim.kill();
-      if (anim.scrollTrigger) {
+      if (!immediate && anim.scrollTrigger) {
         anim.scrollTrigger.kill();
       }
     };
-  }, [delay, triggerPosition, duration, from]);
+  }, [delay, triggerPosition, duration, from, immediate]);
 
   return (
     <div ref={sectionRef} className={className}>

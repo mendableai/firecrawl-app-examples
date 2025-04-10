@@ -51,9 +51,9 @@ This Next.js application converts web content from URLs into engaging podcasts u
 3. Create a `.env` file in the root directory with the following variables:
 
    ```
-   NEXT_PUBLIC_FIRECRAWL_API_KEY=your_firecrawl_api_key
+   FIRECRAWL_API_KEY=your_firecrawl_api_key
    ANTHROPIC_API_KEY=your_anthropic_api_key
-   NEXT_PUBLIC_ELEVENLABS_API_KEY=your_elevenlabs_api_key
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key
    ```
 
 4. Run the development server
@@ -98,9 +98,9 @@ This Next.js application converts web content from URLs into engaging podcasts u
 
 ## Environment Variables
 
-- `NEXT_PUBLIC_FIRECRAWL_API_KEY`: API key for Firecrawl (get from [firecrawl.dev](https://firecrawl.dev))
+- `FIRECRAWL_API_KEY`: API key for Firecrawl (get from [firecrawl.dev](https://firecrawl.dev))
 - `ANTHROPIC_API_KEY`: API key for Anthropic Claude (get from [Anthropic Console](https://console.anthropic.com/))
-- `NEXT_PUBLIC_ELEVENLABS_API_KEY`: API key for ElevenLabs (get from [ElevenLabs](https://elevenlabs.io/))
+- `ELEVENLABS_API_KEY`: API key for ElevenLabs (get from [ElevenLabs](https://elevenlabs.io/))
 
 ## Limitations
 

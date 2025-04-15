@@ -104,6 +104,9 @@ def debug_pdf_path(error: str) -> list[base.Message]:
     ]
 
 
-# Run the server if this script is executed directly
-if __name__ == "__main__":
+def main():
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()

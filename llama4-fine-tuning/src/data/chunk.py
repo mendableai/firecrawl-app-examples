@@ -284,7 +284,7 @@ if __name__ == "__main__":
         output_file=output_file,
         chunk_size=512,
         chunk_overlap=128,
-        improve_coherence=True,
+        improve_coherence=False,
         max_workers=6,
         model="gpt-4o-mini",
     )

@@ -276,8 +276,8 @@ def process_directory(
 
 if __name__ == "__main__":
     # Process the bullet-echo-wiki directory
-    directory_path = "src/data/bullet-echo-wiki"
-    output_file = "src/data/all_chunks.json"
+    directory_path = "data/raw/bullet-echo-wiki"
+    output_file = "data/raw/all_chunks.json"
 
     chunks = process_directory(
         directory_path=directory_path,

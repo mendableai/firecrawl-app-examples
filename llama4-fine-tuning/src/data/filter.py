@@ -182,8 +182,8 @@ def filter_chunks(
 
 if __name__ == "__main__":
     # Filter chunks from the all_chunks.json file
-    input_file = "src/data/all_chunks.json"
-    output_file = "src/data/filtered_chunks.json"
+    input_file = "data/raw/all_chunks.json"
+    output_file = "data/processed/filtered_chunks.json"
 
     filtered_chunks = filter_chunks(
         input_file=input_file,

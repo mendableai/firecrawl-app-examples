@@ -46,9 +46,9 @@ COMMIT_MESSAGE = "Upload fine-tuned Llama-4 model for Bullet Echo Q&A"
 
 # Training parameters - improved
 NUM_EPOCHS = 3
-BATCH_SIZE = 24  # Increased from 4 for H200 GPUs
-GRADIENT_ACCUMULATION_STEPS = 2  # Reduced from 8
-LEARNING_RATE = 3e-4  # Slightly adjusted for larger batch
+BATCH_SIZE = 4
+GRADIENT_ACCUMULATION_STEPS = 8
+LEARNING_RATE = 2e-4  # Slightly adjusted for larger batch
 WEIGHT_DECAY = 0.01
 WARMUP_RATIO = 0.1
 EVAL_STEPS = 100
@@ -64,7 +64,7 @@ GRADIENT_CHECKPOINTING = True  # Enable gradient checkpointing
 # LoRA parameters - tuned
 LORA_ALPHA = 32
 LORA_DROPOUT = 0.1
-LORA_RANK = 32  # Reduced from 64 for faster training
+LORA_RANK = 64  # Reduced from 64 for faster training
 TARGET_MODULES = [
     "q_proj",
     "k_proj",

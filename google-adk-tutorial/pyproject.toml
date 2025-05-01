@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "firecrawl-py>=2.5.3",
     "google-adk>=0.3.0",
-    "markitdown>=0.1.1",
+    "markitdown[all]>=0.1.1",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
 ]

@@ -18,7 +18,7 @@ The implementation follows the standard ADK package structure for local developm
 
 Navigate to the app directory for complete setup instructions:
 
-```
+```bash
 cd app
 ```
 

@@ -6,7 +6,7 @@ This project demonstrates a versatile agentic AI assistant built using Google's 
 - Search the web for real-time information using Firecrawl
 - Extract and analyze content from web pages
 - Perform deep research on complex topics with source citations
-- Generate images based on text descriptions via OpenAI's image models
+- Generate images based on text descriptions via Gemini's image generation models
 
 ## Project Structure
 
@@ -23,8 +23,7 @@ app/
 ## Prerequisites
 
 - Python 3.9+
-- [Google AI Studio API Key](https://aistudio.google.com/app/apikey) for Gemini models
-- [OpenAI API Key](https://platform.openai.com/api-keys) for image generation
+- [Google AI Studio API Key](https://aistudio.google.com/app/apikey) for both Gemini models and image generation
 - [Firecrawl API Key](https://www.firecrawl.dev) for web search, extraction, and research
 
 ## Setup Instructions
@@ -48,9 +47,6 @@ app/
      ```
      # Gemini API Key
      GOOGLE_API_KEY=your_google_api_key_here
-     
-     # OpenAI API Key for image generation
-     OPENAI_API_KEY=your_openai_api_key_here
      
      # Firecrawl API Key (if required)
      FIRECRAWL_API_KEY=your_firecrawl_api_key_here
@@ -110,7 +106,7 @@ The system is composed of multiple specialized agents:
 - **scrape_webpage**: Extracts content from a URL in various formats (markdown, HTML, links)
 - **extract_structured_data**: Extracts specific structured data from a webpage
 - **deep_research**: Researches a topic in-depth using multiple sources
-- **generate_image**: Creates images using OpenAI's image generation API
+- **generate_image**: Creates images using Gemini's image generation model
 
 ## Safety Features
 

@@ -416,9 +416,9 @@ Instead of passing only a model name string (which defaults to Google's Gemini m
 Make sure you have configured the necessary API keys for OpenAI and Anthropic in Step 0. We'll use the `call_agent_async` function (defined earlier, which now accepts `runner`, `user_id`, and `session_id`) to interact with each agent immediately after its setup.
 
 Each block below will:
-\\* Define the agent using a specific LiteLLM model ( `MODEL_GPT_4O` or `MODEL_CLAUDE_SONNET`).
+\\*Define the agent using a specific LiteLLM model ( `MODEL_GPT_4O` or `MODEL_CLAUDE_SONNET`).
 \\* Create a _new, separate_ `InMemorySessionService` and session specifically for that agent's test run. This keeps the conversation histories isolated for this demonstration.
-\\* Create a `Runner` configured for the specific agent and its session service.
+\\*Create a `Runner` configured for the specific agent and its session service.
 \\* Immediately call `call_agent_async` to send a query and test the agent.
 
 **Best Practice:** Use constants for model names (like `MODEL_GPT_4O`, `MODEL_CLAUDE_SONNET` defined in Step 0) to avoid typos and make code easier to manage.
@@ -959,7 +959,6 @@ Now, we create a new version of the weather tool. Its key feature is accepting `
 - **Key Concept: `ToolContext`** This object is the bridge allowing your tool logic to interact with the session's context, including reading and writing state variables. ADK injects it automatically if defined as the last parameter of your tool function.
 
 - **Best Practice:** When reading from state, use `dictionary.get('key', default_value)` to handle cases where the key might not exist yet, ensuring your tool doesn't crash.
-
 
 ```md-code__content
 from google.adk.tools.tool_context import ToolContext

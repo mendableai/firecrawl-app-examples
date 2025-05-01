@@ -1,17 +1,26 @@
-from typing import Optional, Dict
+import os
+import datetime
+import json
+import base64
+from typing import Optional, Dict, Any, List
+from zoneinfo import ZoneInfo
+from io import BytesIO
 
 from google.adk.agents import Agent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
 from google.genai import types
+from google import genai
+from google.adk.tools.tool_context import ToolContext
+from google.adk.tools.base_tool import BaseTool
 
 # Third-party imports for tools
 from firecrawl import FirecrawlApp
-from openai import OpenAI
 
 # Constants for model names
 MODEL_GEMINI_2_0_FLASH = "gemini-2.0-flash"
+GEMINI_IMAGE_GEN_MODEL = "gemini-2.0-flash-exp-image-generation"
 
 # -------------------- TOOLS --------------------
 
@@ -184,12 +193,13 @@ def deep_research(
         }
 
 
-def generate_image(prompt: str, model: str = "gpt-image-1") -> Dict:
-    """Generates an image using OpenAI's image generation models.
+def generate_image(prompt: str, model: str = GEMINI_IMAGE_GEN_MODEL) -> Dict:
+    """Generates an image using Gemini's image generation models.
 
     Args:
         prompt (str): A description of the image to generate.
-        model (str, optional): The model to use for image generation. Defaults to "gpt-image-1".
+        model (str, optional): The model to use for image generation.
+                              Defaults to Gemini's image generation model.
 
     Returns:
         Dict: A dictionary containing the image generation results.
@@ -200,14 +210,33 @@ def generate_image(prompt: str, model: str = "gpt-image-1") -> Dict:
     print(f"--- Tool: generate_image called with prompt: {prompt} ---")
 
     try:
-        client = OpenAI()
-        result = client.images.generate(model=model, prompt=prompt)
+        # Initialize Gemini client
+        client = genai.Client()
 
-        if result.data and len(result.data) > 0 and result.data[0].b64_json:
+        # Generate content with image response
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"]),
+        )
+
+        # Process the response
+        image_data = None
+        text_response = ""
+
+        for part in response.candidates[0].content.parts:
+            if part.text is not None:
+                text_response += part.text
+            elif part.inline_data is not None:
+                # Convert binary data to base64 string
+                image_data = base64.b64encode(part.inline_data.data).decode("utf-8")
+
+        if image_data:
             return {
                 "status": "success",
                 "prompt": prompt,
-                "image_data": result.data[0].b64_json,
+                "text_response": text_response,
+                "image_data": image_data,
             }
         else:
             return {
@@ -316,7 +345,7 @@ image_generation_agent = Agent(
     "Emphasize that image generation is performed by AI and may not perfectly match expectations. "
     "If image generation fails, apologize and suggest modifications to the prompt that might work better. "
     "NEVER generate images that could be harmful, explicit, or violate ethical guidelines.",
-    description="Generates images based on text descriptions using OpenAI's image generation models.",
+    description="Generates images based on text descriptions using Gemini's image generation model.",
     tools=[generate_image],
 )
 

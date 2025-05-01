@@ -1,3 +1,5 @@
 google-adk>=0.8.0
-litellm>=1.10.0
-python-dotenv>=1.0.0 
+python-dotenv>=1.0.0
+firecrawl>=0.5.0
+openai>=1.0.0
+Pillow>=9.0.0 

@@ -1,5 +1,8 @@
 import os
 import asyncio
+import base64
+import io
+from PIL import Image
 from dotenv import load_dotenv
 import argparse
 from google.genai import types
@@ -7,63 +10,98 @@ from google.genai import types
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 
-from weather_agent_team.agent import root_agent
+from chatgpt_agentic_clone.agent import root_agent
 
 # Load environment variables from .env file
 load_dotenv()
 
-APP_NAME = "weather_agent_team_app"
+APP_NAME = "chatgpt_agentic_clone_app"
 USER_ID = "user_1"
 SESSION_ID = "session_001"
 
 
 async def call_agent_async(query: str, runner, user_id, session_id):
-    """Sends a query to the agent and prints the final response."""
+    """Sends a query to the agent and processes the final response."""
     print(f"\n>>> User Query: {query}")
 
     # Prepare the user's message in ADK format
     content = types.Content(role="user", parts=[types.Part(text=query)])
 
     final_response_text = "Agent did not produce a final response."  # Default
+    image_data = None
 
-    # Key Concept: run_async executes the agent logic and yields Events.
-    # We iterate through events to find the final answer.
+    # Run the agent and process events
     async for event in runner.run_async(
         user_id=user_id, session_id=session_id, new_message=content
     ):
-        # You can uncomment the line below to see *all* events during execution
-        # print(f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}, Content: {event.content}")
+        # You can uncomment the line below to see all events
+        # print(f"  [Event] Type: {type(event).__name__}, Final: {event.is_final_response()}")
 
-        # Key Concept: is_final_response() marks the concluding message for the turn.
+        # Process the final response
         if event.is_final_response():
             if event.content and event.content.parts:
-                # Assuming text response in the first part
-                final_response_text = event.content.parts[0].text
-            elif (
-                event.actions and event.actions.escalate
-            ):  # Handle potential errors/escalations
+                # Extract text and check for special content markers
+                response_text = event.content.parts[0].text
+
+                # Check if the response contains a base64 image
+                if "[[IMAGE_DATA:" in response_text:
+                    # Extract the image data
+                    start_marker = "[[IMAGE_DATA:"
+                    end_marker = "]]"
+                    start_idx = response_text.find(start_marker) + len(start_marker)
+                    end_idx = response_text.find(end_marker, start_idx)
+
+                    if start_idx > len(start_marker) - 1 and end_idx > start_idx:
+                        # Get the base64 data
+                        image_data = response_text[start_idx:end_idx].strip()
+
+                        # Remove the image data marker from the text response
+                        response_text = (
+                            response_text[: start_idx - len(start_marker)]
+                            + "[Image Generated]"
+                            + response_text[end_idx + len(end_marker) :]
+                        )
+
+                final_response_text = response_text
+            elif event.actions and event.actions.escalate:
                 final_response_text = (
                     f"Agent escalated: {event.error_message or 'No specific message.'}"
                 )
-            # Add more checks here if needed (e.g., specific error codes)
+
             break  # Stop processing events once the final response is found
 
+    # Print the response and display image if available
     print(f"<<< Agent Response: {final_response_text}")
-    return final_response_text
+
+    if image_data:
+        try:
+            print(
+                "\n[Image was generated. In a GUI application, this would be displayed to the user.]"
+            )
+            # The following code would be used in a GUI environment to display the image
+            # image_bytes = base64.b64decode(image_data)
+            # image = Image.open(io.BytesIO(image_bytes))
+            # image.show()
+        except Exception as e:
+            print(f"Error processing image: {e}")
+
+    return {"text": final_response_text, "image_data": image_data}
 
 
 async def interactive_session(runner, user_id, session_id):
     """Run an interactive session with the agent."""
-    print("\n===== Weather Agent Team Interactive Session =====")
+    print("\n===== ChatGPT-Like Agentic Clone =====")
     print("Type 'exit' or 'quit' to end the session.")
-    print("Available test commands:")
+    print("Example commands:")
     print(
-        " - Weather queries: 'What's the weather in London?', 'Weather in New York', etc."
+        " - General knowledge: 'Who was Marie Curie?', 'How does photosynthesis work?'"
     )
-    print(" - Greetings: 'Hello', 'Hi there', etc.")
-    print(" - Farewells: 'Goodbye', 'Bye', etc.")
-    print(" - Blocked keyword: Try including 'BLOCK' in your message")
-    print(" - Blocked city: Try asking about weather in 'Paris'")
+    print(
+        " - Current info: 'What's the weather in London right now?', 'Latest news about AI'"
+    )
+    print(" - Web extraction: 'Extract content from https://example.com'")
+    print(" - Research: 'Do deep research on quantum computing advances'")
+    print(" - Image: 'Generate an image of a cat playing piano'")
     print("========================================")
 
     while True:
@@ -83,7 +121,7 @@ async def interactive_session(runner, user_id, session_id):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the Weather Agent Team")
+    parser = argparse.ArgumentParser(description="Run the ChatGPT-like Agentic Clone")
     parser.add_argument(
         "--session-id",
         type=str,

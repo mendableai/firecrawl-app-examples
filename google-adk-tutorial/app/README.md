@@ -1,29 +1,31 @@
-# Weather Agent Team
+# ChatGPT Agentic Clone
 
-This project demonstrates a multi-agent system built using Google's Agent Development Kit (ADK). It implements a Weather Bot that can:
+This project demonstrates a versatile agentic AI assistant built using Google's Agent Development Kit (ADK). It implements a ChatGPT-like clone with additional capabilities:
 
-- Provide weather information for cities
-- Display current time in supported cities
-- Handle greetings and farewells through specialized sub-agents
-- Remember user preferences (temperature unit: Celsius/Fahrenheit)
-- Apply safety guardrails for both input messages and tool usage
+- Answer general knowledge questions using the LLM's training
+- Search the web for real-time information using Firecrawl
+- Extract and analyze content from web pages
+- Perform deep research on complex topics with source citations
+- Generate images based on text descriptions via OpenAI's image models
 
 ## Project Structure
 
 ```
 app/
-├── .env                    # API key configuration
-├── main.py                 # Runner application
-└── weather_agent_team/     # Agent package
-    ├── __init__.py         # Package marker
-    └── agent.py            # Agent definitions and tools
+├── .env                       # API key configuration
+├── main.py                    # Runner application
+├── requirements.txt           # Dependencies
+└── chatgpt_agentic_clone/     # Agent package
+    ├── __init__.py            # Package marker
+    └── agent.py               # Agent definitions and tools
 ```
 
 ## Prerequisites
 
 - Python 3.9+
 - [Google AI Studio API Key](https://aistudio.google.com/app/apikey) for Gemini models
-- (Optional) API keys for OpenAI and/or Anthropic models
+- [OpenAI API Key](https://platform.openai.com/api-keys) for image generation
+- [Firecrawl API Key](https://www.firecrawl.dev) for web search, extraction, and research
 
 ## Setup Instructions
 
@@ -37,12 +39,22 @@ app/
 2. Install the required packages:
 
    ```
-   pip install google-adk litellm python-dotenv
+   pip install -r requirements.txt
    ```
 
 3. Configure your API keys:
-   - Edit the `.env` file and replace `YOUR_GEMINI_API_KEY_HERE` with your actual API key
-   - If you want to use OpenAI or Anthropic models, uncomment and configure those API keys as well
+   - Edit the `.env` file and add your actual API keys:
+
+     ```
+     # Gemini API Key
+     GOOGLE_API_KEY=your_google_api_key_here
+     
+     # OpenAI API Key for image generation
+     OPENAI_API_KEY=your_openai_api_key_here
+     
+     # Firecrawl API Key (if required)
+     FIRECRAWL_API_KEY=your_firecrawl_api_key_here
+     ```
 
 ## Running the Agent
 
@@ -69,29 +81,40 @@ cd ..  # Move to parent directory
 adk web
 ```
 
-Then open the URL (typically <http://localhost:8000>) in your browser and select "weather_agent_team" from the dropdown.
+Then open the URL (typically <http://localhost:8000>) in your browser and select "chatgpt_agentic_clone" from the dropdown.
 
 ## Testing the Agent
 
 Try the following types of queries:
 
-- **Weather queries**: "What's the weather in London?", "Weather in New York", etc.
-- **Time queries**: "What time is it in New York?"
-- **Greetings**: "Hello", "Hi there", etc. (will be delegated to greeting_agent)
-- **Farewells**: "Goodbye", "Bye", etc. (will be delegated to farewell_agent)
-- **Testing guardrails**:
-  - Input blocking: Include "BLOCK" in your message
-  - Tool argument blocking: Ask about weather in "Paris"
+- **General knowledge**: "Who was Marie Curie?", "How does photosynthesis work?"
+- **Web search**: "What's the weather in London right now?", "Latest news about AI"
+- **Web extraction**: "Extract content from <https://github.com/trending>"
+- **Structured extraction**: "Extract the trending repositories from <https://github.com/trending>"
+- **Deep research**: "Do deep research on quantum computing advances"
+- **Image generation**: "Generate an image of a cat playing piano"
 
-## Extending the Agent
+## Agent Components
 
-Here are some ideas to extend this project:
+The system is composed of multiple specialized agents:
 
-- Connect to a real weather API
-- Add more specialized sub-agents
-- Implement additional safety guardrails
-- Create a web interface using FastAPI
-- Add streaming support
+1. **Root Agent**: Coordinates everything and handles general knowledge queries
+2. **Search Agent**: Searches the web for real-time information
+3. **Web Extraction Agent**: Extracts content from web pages
+4. **Research Agent**: Conducts deep research with multiple sources
+5. **Image Generation Agent**: Creates images from text descriptions
+
+## Tools & Capabilities
+
+- **web_search**: Searches the web using Firecrawl
+- **scrape_webpage**: Extracts content from a URL in various formats (markdown, HTML, links)
+- **extract_structured_data**: Extracts specific structured data from a webpage
+- **deep_research**: Researches a topic in-depth using multiple sources
+- **generate_image**: Creates images using OpenAI's image generation API
+
+## Safety Features
+
+The agent includes content filtering via the `content_filter_callback` to prevent harmful requests.
 
 ## License
 

@@ -1,11 +1,12 @@
-name: Monthly Scraping Bullet Echo Base URL
+name: Weekly Scraping Bullet Echo Base URL
 
 on:
   schedule:
-    # Run at midnight (00:00) on the first day of every month
-    - cron: "0 0 1 * *"
+    # Run at midnight (00:00) on the first day of every week
+    - cron: "0 0 * * 1"
   workflow_dispatch: # Allow manual triggering
 
+# Add permissions to allow GitHub Actions to push changes
 permissions:
   contents: write
 
@@ -21,7 +22,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
-          cache: "pip"
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -29,7 +30,7 @@ jobs:
           pip install .
 
       - name: Run scraping script
-        run: python src/initial_scrape.py
+        run: python src/weekly_scrape.py
         env:
           # Include any environment variables needed by the script
           # These should be set as secrets in your repository settings
@@ -40,5 +41,5 @@ jobs:
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           git add data/
-          git commit -m "Update data from monthly scrape" || echo "No changes to commit"
+          git commit -m "Update data from weekly scrape" || echo "No changes to commit"
           git push

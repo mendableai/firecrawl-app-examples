@@ -1,10 +1,10 @@
 import time
 from pathlib import Path
-from typing import List
 
 from firecrawl import FirecrawlApp
-from pydantic import BaseModel
 from dotenv import load_dotenv
+from models import ArticleList
+from utils import is_changed, save_articles
 
 # Load environment variables
 load_dotenv()
@@ -29,51 +29,9 @@ POLLING_INTERVAL = 30  # Seconds between status checks
 app = FirecrawlApp()
 
 
-# Define data models
-class Article(BaseModel):
-    url: str
-    title: str
-
-
-class ArticleList(BaseModel):
-    articles: List[Article]
-
-
-def is_changed(url):
-    result = app.scrape_url(url, formats=["changeTracking", "markdown"])
-    return result.changeTracking.changeStatus == "changed"
-
-
-def save_articles(status_data, path):
-    """
-    Save each article to markdown file
-    Args:
-        status_data: Data returned from the batch scrape status
-        path: Directory path to save the markdown files
-    """
-    # Create the directory if it doesn't exist
-    Path(path).mkdir(parents=True, exist_ok=True)
-
-    for s in status_data.data:
-        url = s.metadata.get("url")
-        title = s.metadata.get("og:title")
-
-        if url and title:
-            # Get a clean title
-            title = title.replace(" ", "-").replace("/", "-").replace("|", "-")
-
-            filename = Path(path) / f"{title}.md"
-            # Check if the file already exists
-            if not filename.exists():
-                with open(filename, "w") as f:
-                    f.write(s.markdown)
-
-
-def main():
-    # Ensure data directory exists
-    DATA_DIR.mkdir(exist_ok=True, parents=True)
-
-    if is_changed(BASE_URL) or not ARTICLES_LIST_FILE.exists():
+def get_article_list():
+    """Get the list of articles from the wiki or from the cached file."""
+    if is_changed(app, BASE_URL) or not ARTICLES_LIST_FILE.exists():
         print("The wiki pages list has changed. Scraping the wiki pages list...")
         # Scrape the wiki pages list
         result = app.batch_scrape_urls(
@@ -90,18 +48,23 @@ def main():
         with open(ARTICLES_LIST_FILE, "w") as f:
             for article in all_articles:
                 f.write(article + "\n")
+
+        return all_articles
     else:
         print("The wiki pages list has not changed. Scraping from existing list...")
         with open(ARTICLES_LIST_FILE, "r") as f:
-            all_articles = f.readlines()
+            return [line.strip() for line in f.readlines()]
 
-    print(f"Scraping the found articles...")
-    # Batch scrape the article contents
-    job = app.async_batch_scrape_urls(all_articles)
 
-    # Monitor the job status and save results
+def scrape_and_monitor_articles(article_urls):
+    """Scrape articles and monitor the process until completion or timeout."""
+    print(f"Scraping {len(article_urls)} articles...")
+
+    # Start the batch scrape job
+    job = app.async_batch_scrape_urls(article_urls)
     start_time = time.time()
 
+    # Monitor the job status and save results
     while True:
         status = app.check_batch_scrape_status(job.id)
         if status.status == "completed":
@@ -118,6 +81,17 @@ def main():
 
         print("Waiting for batch scrape to complete...")
         time.sleep(POLLING_INTERVAL)
+
+
+def main():
+    # Ensure data directory exists
+    DATA_DIR.mkdir(exist_ok=True, parents=True)
+
+    # Get article list - either from the wiki or from cached file
+    all_articles = get_article_list()
+
+    # Scrape articles and monitor the process
+    scrape_and_monitor_articles(all_articles)
 
 
 if __name__ == "__main__":

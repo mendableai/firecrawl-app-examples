@@ -6,6 +6,11 @@ def is_changed(firecrawl_app, url):
     return result.changeTracking.changeStatus == "changed"
 
 
+def save_markdown(markdown, path):
+    with open(path, "w") as f:
+        f.write(markdown)
+
+
 def save_status_data(status_data, path):
     # Create the directory if it doesn't exist
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -21,5 +26,4 @@ def save_status_data(status_data, path):
             filename = Path(path) / f"{title}.md"
             # Check if the file already exists
             if not filename.exists():
-                with open(filename, "w") as f:
-                    f.write(s.markdown)
+                save_markdown(s.markdown, filename)

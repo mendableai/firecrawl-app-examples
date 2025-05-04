@@ -1,9 +1,9 @@
-name: Weekly Scraping
+name: Monthly Scraping Bullet Echo Base URL
 
 on:
   schedule:
-    # Run at midnight (00:00) every Monday
-    - cron: "0 0 * * 1"
+    # Run at midnight (00:00) on the first day of every month
+    - cron: "0 0 1 * *"
   workflow_dispatch: # Allow manual triggering
 
 jobs:
@@ -36,5 +36,5 @@ jobs:
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           git add data/
-          git commit -m "Update data from weekly scrape" || echo "No changes to commit"
+          git commit -m "Update data from monthly scrape" || echo "No changes to commit"
           git push

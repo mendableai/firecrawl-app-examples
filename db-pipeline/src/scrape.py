@@ -39,6 +39,11 @@ class ArticleList(BaseModel):
     articles: List[Article]
 
 
+def is_changed(url):
+    result = app.scrape_url(url, formats=["changeTracking", "markdown"])
+    return result.changeTracking.changeStatus == "changed"
+
+
 def save_articles(status_data, path):
     """
     Save each article to markdown file
@@ -65,26 +70,32 @@ def save_articles(status_data, path):
 
 
 def main():
-    # Scrape the wiki pages list
-    print("Scraping the wiki pages list...")
-    result = app.batch_scrape_urls(
-        [BASE_URL],
-        formats=["extract"],
-        extract={"schema": ArticleList.model_json_schema()},
-    )
-
-    # Extract all article URLs
-    all_articles = [a["url"] for a in result.data[0].extract["articles"]]
-    print(f"Found {len(all_articles)} articles")
-
     # Ensure data directory exists
     DATA_DIR.mkdir(exist_ok=True, parents=True)
 
-    # Write the links to a text file
-    with open(ARTICLES_LIST_FILE, "w") as f:
-        for article in all_articles:
-            f.write(article + "\n")
+    if is_changed(BASE_URL) or not ARTICLES_LIST_FILE.exists():
+        print("The wiki pages list has changed. Scraping the wiki pages list...")
+        # Scrape the wiki pages list
+        result = app.batch_scrape_urls(
+            [BASE_URL],
+            formats=["extract"],
+            extract={"schema": ArticleList.model_json_schema()},
+        )
 
+        # Extract all article URLs
+        all_articles = [a["url"] for a in result.data[0].extract["articles"]]
+        print(f"Found {len(all_articles)} articles")
+
+        # Write the links to a text file
+        with open(ARTICLES_LIST_FILE, "w") as f:
+            for article in all_articles:
+                f.write(article + "\n")
+    else:
+        print("The wiki pages list has not changed. Scraping from existing list...")
+        with open(ARTICLES_LIST_FILE, "r") as f:
+            all_articles = f.readlines()
+
+    print(f"Scraping the found articles...")
     # Batch scrape the article contents
     job = app.async_batch_scrape_urls(all_articles)
 

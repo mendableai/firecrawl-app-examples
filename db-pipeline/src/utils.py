@@ -6,7 +6,7 @@ def is_changed(firecrawl_app, url):
     return result.changeTracking.changeStatus == "changed"
 
 
-def save_articles(status_data, path):
+def save_status_data(status_data, path):
     # Create the directory if it doesn't exist
     Path(path).mkdir(parents=True, exist_ok=True)
 

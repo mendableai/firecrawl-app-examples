@@ -4,7 +4,7 @@ from pathlib import Path
 from firecrawl import FirecrawlApp
 from dotenv import load_dotenv
 from models import ArticleList
-from utils import is_changed, save_articles
+from utils import is_changed, save_status_data
 
 # Load environment variables
 load_dotenv()
@@ -77,7 +77,7 @@ def scrape_and_monitor_articles(article_urls):
             break
 
         # Save the partial results
-        save_articles(status, OUTPUT_DIRECTORY)
+        save_status_data(status, OUTPUT_DIRECTORY)
 
         print("Waiting for batch scrape to complete...")
         time.sleep(POLLING_INTERVAL)

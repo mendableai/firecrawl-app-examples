@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "llama4-fine-tuning"
+version = "0.1.0"
+description = ""
+authors = ["BexTuychiev <bex@ibexprogramming.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+firecrawl-py = "^2.1.2"
+python-dotenv = "^1.1.0"
+requests = "^2.32.3"
+pydantic = "^2.11.3"
+openai = "^1.75.0"
+langchain-text-splitters = "^0.3.8"
+datasets = "^3.5.0"
+huggingface-hub = {extras = ["hf-xet"], version = "^0.30.2"}
+accelerate = "^1.6.0"
+peft = "^0.15.2"
+trl = "^0.16.1"
+transformers = "^4.51.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

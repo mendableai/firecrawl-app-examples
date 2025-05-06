@@ -1,0 +1,17 @@
+[project]
+name = "google-adk-tutorial"
+version = "0.1.0"
+description = "A demo project for Google AdK Tutorial"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "firecrawl-py>=2.5.3",
+    "google-adk>=0.3.0",
+    "ipykernel>=6.29.5",
+    "langchain-community>=0.3.23",
+    "litellm>=1.67.5",
+    "markitdown[all]>=0.1.1",
+    "openai>=1.76.2",
+    "pydantic>=2.11.4",
+    "python-dotenv>=1.1.0",
+]

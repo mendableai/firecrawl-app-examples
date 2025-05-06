@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 // Using Assistants API for file processing
 
-// Define the response type expected from OpenAI and used internally
-// (Keep this consistent with the final JSON structure we want)
 type Summary = {
   job_profiles: Array<{
     title: string;
@@ -21,7 +19,6 @@ type Summary = {
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // --- Helper Function to Poll Run Status ---
-// (Needed because Assistants API runs are asynchronous)
 async function pollRunStatus(
   threadId: string,
   runId: string,
@@ -294,8 +291,7 @@ Respond ONLY with a valid JSON object containing these keys:
     return NextResponse.json(finalSummary);
   } catch (error: any) {
     console.error("API route error in Assistants Workflow:", error);
-    // Attempt to clean up uploaded file and thread if they exist?
-    // (Add cleanup logic if needed)
+
     return NextResponse.json(
       {
         error: error.message || "Failed to process resume using Assistant API",
@@ -304,8 +300,6 @@ Respond ONLY with a valid JSON object containing these keys:
       { status: 500 },
     );
   } finally {
-    // Optional cleanup: Delete the thread and file after processing?
-    // if (threadId) { await openai.beta.threads.del(threadId).catch(e => console.error("Cleanup: Failed to delete thread", e)); }
-    // if (fileId) { await openai.files.delete(fileId).catch(e => console.error("Cleanup: Failed to delete file", e)); }
+  
   }
 }

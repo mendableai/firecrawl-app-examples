@@ -1,4 +1,13 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Deep Job Researcher
+
+A Next.js application that helps job seekers find relevant positions by analyzing their resume or portfolio. Powered by [Firecrawl](https://firecrawl.dev) for intelligent web crawling and OpenAI for resume analysis.
+
+## Features
+
+- **Resume Analysis**: Upload your PDF resume for AI-powered skill and experience extraction
+- **Job Matching**: Automatically find job listings that match your skills and experience
+- **Advanced Filtering**: Filter jobs by work type, location, salary range, and experience level
+- **Match Scoring**: See how well each job matches your profile with detailed explanations
 
 ## Getting Started
 
@@ -10,82 +19,72 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom font.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
 ## Environment Variables
 
 This application requires the following environment variables:
 
 ```
-# API Keys (DO NOT commit actual keys to version control)
+# API Keys 
 OPENAI_API_KEY=your_openai_api_key_here
 
 # Environment
 NODE_ENV=development
 
-# Application Settings
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+
 ```
 
 For production deployment, create a `.env.production` file with the appropriate values.
+
+## Using Firecrawl API
+
+This application uses the Firecrawl API for web crawling and data extraction. To use your own Firecrawl API key:
+
+1. Sign up for an account at [Firecrawl](https://firecrawl.dev)
+2. Obtain your API key from the dashboard
+3. Enter your API key in the application's settings page
+4. The application will use your key for all future requests
+
+## OpenAI Integration
+
+The application uses OpenAI's GPT models for:
+
+1. Resume parsing and skill extraction
+2. Job matching and relevance scoring
+3. Generating job match explanations
+
+You must provide a valid OpenAI API key in the environment variables for these features to work.
+
+## How It Works
+
+1. **Upload Resume**: The system extracts your skills, experience, and qualifications
+2. **Search Jobs**: The application uses Firecrawl to search the web for relevant job listings
+3. **Match Analysis**: OpenAI analyzes the job postings against your resume
+4. **Results**: See a ranked list of matching jobs with detailed match explanations
 
 ## Deployment
 
 ### Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The easiest way to deploy this app is to use the [Vercel Platform](https://vercel.com/new):
 
 1. Push your code to a Git repository (GitHub, GitLab, Bitbucket)
 2. Import your project to Vercel
-3. Vercel will detect Next.js automatically and use optimal build settings
-4. Set up environment variables in the Vercel dashboard
-5. Your app will be deployed to a production URL
+3. Set up environment variables in the Vercel dashboard
+4. Your app will be deployed to a production URL
 
-### Deploy on Netlify
+### Security Considerations
 
-To deploy on Netlify:
-
-1. Push your code to a Git repository
-2. Log in to Netlify and click "New site from Git"
-3. Select your repository
-4. Netlify will detect Next.js and use the settings from your `netlify.toml` file
-5. Configure environment variables in the Netlify dashboard
-6. Deploy your site
-
-### CI/CD with GitHub Actions
-
-This project includes GitHub Actions workflows in the `.github/workflows` directory:
-
-1. The workflow runs on push to main and on pull requests
-2. It lints and builds the application
-3. On merge to main, it automatically deploys to Vercel
-4. To enable automatic deployment:
-   - Generate a Vercel token in your Vercel account settings
-   - Add it as a GitHub secret named `VERCEL_TOKEN`
-
-## Security Headers
-
-Both Vercel and Netlify configurations include security headers:
-
-- Content-Security-Policy
-- X-Frame-Options
-- X-Content-Type-Options
-- X-XSS-Protection
-- Referrer-Policy
+- Never commit API keys to your repository
+- Set up proper CORS policies in production
+- Consider rate limiting for API endpoints
+- Ensure PDF processing is done securely
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Firecrawl Documentation](https://firecrawl.dev/docs)
+- [OpenAI API Reference](https://platform.openai.com/docs/api-reference)

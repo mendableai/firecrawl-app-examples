@@ -88,12 +88,10 @@ class FirecrawlService {
   }
 
   private getClient() {
-    // First check the internal apiKey property
     if (this.apiKey) {
       return new FirecrawlApp({ apiKey: this.apiKey });
     }
 
-    // Fallback to getting from the apiService
     const apiKey = apiService.getFirecrawlApiKey();
     if (!apiKey) {
       throw new Error("Firecrawl API key not configured");
@@ -106,7 +104,6 @@ class FirecrawlService {
     const client = this.getClient();
 
     try {
-      // Use real Firecrawl API to extract profile data
       console.log(`Extracting profile from URL: ${url}`);
 
       const scrapeResult = await client.extract([url], {
@@ -123,7 +120,6 @@ class FirecrawlService {
     } catch (error) {
       console.error("Error extracting profile:", error);
 
-      // If extraction fails, throw the error to be handled by the caller
       throw error;
     }
   }
@@ -223,12 +219,9 @@ class FirecrawlService {
         maxUrls: maxResults,
       };
 
-      // Helper function to determine if a URL is likely a job listing page
       const isJobListingUrl = (url: string): boolean => {
-        // Common URL patterns for job listings
         if (!url) return false;
 
-        // Check for red flag patterns first (these are NOT job listings)
         const redFlags = [
           /salary/i,
           /average/i,
@@ -328,7 +321,6 @@ class FirecrawlService {
               updateProgress("Job research complete");
             }
 
-            // Additional detailed logging for debugging
             if (activity.type === "error") {
               console.error("Firecrawl error:", activity.message);
               updateProgress(`Error during research: ${activity.message}`);
@@ -336,17 +328,14 @@ class FirecrawlService {
           },
         );
 
-        // Check if we have valid results
         if (!results || typeof results !== "object") {
           throw new Error("Invalid research results");
         }
 
-        // Check if we have an error response
         if ("error" in results && results.error) {
           throw new Error(`Research error: ${results.error}`);
         }
 
-        // Handle results data safely
         const resultData = "data" in results ? results.data : null;
         if (!resultData) {
           throw new Error("No data in research results");
@@ -366,7 +355,6 @@ class FirecrawlService {
         // Parse and format job results
         const sources = resultData.sources || [];
 
-        // Process the research results into structured job listings
         updateProgress(
           "Processing and filtering job listings to remove search pages...",
         );
@@ -401,7 +389,6 @@ class FirecrawlService {
             return false;
           }
 
-          // Filter out obvious non-job pages by content/description
           if (
             description.includes("average salary") ||
             description.includes("salary ranges") ||
@@ -414,7 +401,6 @@ class FirecrawlService {
             return false;
           }
 
-          // Check if this is just a company profile, not a job
           if (
             (url.includes("wellfound.com/company/") ||
               url.includes("angel.co/company/")) &&
@@ -485,61 +471,49 @@ class FirecrawlService {
 
         const jobs: JobData[] = filteredSources.map(
           (source: any, index: number) => {
-            // Extract job information from the source
-            // This structure will depend on how Firecrawl returns data
+         
             const jobTitle = source.title || `Job ${index + 1}`;
 
-            // Improved company name extraction
             let company =
               source.companyName || source.company || "Unknown Company";
 
-            // Handle special cases in job titles
             if (company === "Unknown Company" && jobTitle) {
-              // Case 1: Simple "at Company" pattern
               const atCompanyMatch = jobTitle.match(
                 /\bat\s+([A-Z][A-Za-z0-9.\s]+?)(?:\s+\||$)/,
               );
 
-              // Case 2: Y Combinator pattern - extract the actual company
               const yCombinatorMatch = jobTitle.match(
                 /at\s+([A-Za-z0-9.\s]+?)\s+\|\s+Y\s+Combinator/i,
               );
 
-              // Case 3: Explicit company mention
               const companyMatch = jobTitle.match(
                 /\bCompany:\s+([A-Za-z0-9.\s]+)(?:\s+\||$)/i,
               );
 
               if (yCombinatorMatch && yCombinatorMatch[1]) {
-                // If it's a Y Combinator job, use the company before Y Combinator
+             
                 company = yCombinatorMatch[1].trim();
               } else if (companyMatch && companyMatch[1]) {
-                // If there's an explicit company mention, use that
                 company = companyMatch[1].trim();
               } else if (atCompanyMatch && atCompanyMatch[1]) {
-                // For a simple "at Company" pattern
                 company = atCompanyMatch[1].trim();
 
-                // Don't set "Y Combinator's Work at a Startup" as the company name
+                
                 if (
                   company === "Y Combinator's Work at a Startup" ||
                   company === "Y Combinator" ||
                   company.includes("Work at a Startup")
                 ) {
-                  // For Y Combinator jobs, set the company name to the platform
                   company = "Y Combinator Startup";
                 }
               }
 
-              // If title contains LinkedIn, clean it up
               if (jobTitle.includes("LinkedIn")) {
-                // Remove LinkedIn references from title
                 if (
                   company === "Unknown Company" ||
                   company.includes("LinkedIn")
                 ) {
                   company = jobTitle.replace(/\s+\|\s+LinkedIn/i, "").trim();
-                  // If company is now just "Work at a Startup", fix it
                   if (company === "Work at a Startup") {
                     company = "Y Combinator Startup";
                   }
@@ -551,19 +525,16 @@ class FirecrawlService {
             const description =
               source.snippet || source.content || "No description available";
 
-            // Try to extract requirements from the content
             let requirements: string[] = [];
             if (source.requirements && Array.isArray(source.requirements)) {
               requirements = source.requirements;
             } else if (description) {
-              // Try to identify requirements from the description
-              // This is a simplistic approach; a more sophisticated parser could be implemented
+             
               const reqSections = description.match(
                 /requirements:|qualifications:|skills:|we are looking for:/i,
               );
               if (reqSections && reqSections.index) {
                 const reqText = description.substring(reqSections.index);
-                // Extract bullet points or sentences
                 const reqList = reqText
                   .split(/•|\*|\-|\d+\.|;/)
                   .filter(Boolean);
@@ -617,7 +588,6 @@ class FirecrawlService {
       }
     } catch (error) {
       console.error("Error finding job matches:", error);
-      // Throw the error instead of falling back to mock data
       throw new Error(
         `Error during job search: ${
           error instanceof Error ? error.message : "Unknown error"
@@ -626,7 +596,6 @@ class FirecrawlService {
     }
   }
 
-  // Generate mock job data based on the user's profile
   private generateMockJobData(
     profile: ResumeData,
     filters?: JobSearchFilters,
@@ -755,11 +724,9 @@ class FirecrawlService {
       }
     }
 
-    // Generate 10 mock job listings
     const mockJobs: JobData[] = [];
 
     for (let i = 0; i < 10; i++) {
-      // Choose random components for the job
       const company =
         techCompanies[Math.floor(Math.random() * techCompanies.length)];
       const workLocation =
@@ -769,10 +736,8 @@ class FirecrawlService {
       const expLevel =
         experienceLevels[Math.floor(Math.random() * experienceLevels.length)];
 
-      // Make job title related to the profile's title or skills
       let jobTitle = `${expLevel ? expLevel + " " : ""}${title}`;
       if (i % 3 === 0 && skills.length > 0) {
-        // Sometimes use a skill in the title instead
         const randomSkill = skills[Math.floor(Math.random() * skills.length)];
         jobTitle = `${expLevel ? expLevel + " " : ""}${randomSkill} Developer`;
       }
@@ -957,7 +922,7 @@ Based on your profile${
     } catch (error) {
       console.error("Error processing resume file:", error);
 
-      // If the server-side processing fails, fall back to filename-based approach
+    
       console.log("Falling back to filename-based approach");
       const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
       if (OPENAI_API_KEY) {
@@ -973,14 +938,12 @@ Based on your profile${
   // Extract text from PDF file
   private async extractTextFromPdf(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
-      // Instead of using PDF.js which is causing build errors with WebAssembly,
-      // we'll use the raw ArrayBuffer and look for text content
+     
       const reader = new FileReader();
 
       reader.onload = function () {
         try {
           // Read file as text directly
-          // This is a simplistic approach but avoids build errors
           const buffer = reader.result as ArrayBuffer;
           const array = new Uint8Array(buffer);
 
@@ -988,10 +951,8 @@ Based on your profile${
           let text = "";
           let textChunks = [];
 
-          // Look for text sections in the PDF
-          // This is a simplistic approach for extracting text without PDF.js
+       
           for (let i = 0; i < array.length; i++) {
-            // Look for text section markers in PDF
             if (
               i < array.length - 7 &&
               array[i] === 66 &&
@@ -1000,7 +961,6 @@ Based on your profile${
               array[i + 7] === 69 &&
               array[i + 8] === 84
             ) {
-              // Extract text between BT and ET markers
               let j = i + 3;
               let chunk = "";
               while (
@@ -1019,10 +979,8 @@ Based on your profile${
             }
           }
 
-          // Join all text chunks
           text = textChunks.join(" ");
 
-          // If we couldn't extract anything meaningful, try reading as text
           if (text.length < 100) {
             const textReader = new FileReader();
             textReader.onload = function () {

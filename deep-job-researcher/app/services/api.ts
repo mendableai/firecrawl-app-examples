@@ -69,7 +69,7 @@ class ApiService {
         profile,
         10,
         updateProgress,
-        initialFilters, // Pass initial filters if provided
+        initialFilters, 
       );
 
       // Match jobs to the profile using server-side API
@@ -103,7 +103,6 @@ class ApiService {
     }
 
     try {
-      // Process resume file
       updateProgress("Processing your resume...");
       const profile = await firecrawlService.processResumeFile(file);
 
@@ -150,7 +149,7 @@ class ApiService {
     updateProgress: ProgressCallback = () => {},
   ): Promise<JobData[]> {
     try {
-      // If the jobs already have match scores, return them (for development purposes only)
+    
       if (jobs.length > 0 && jobs[0].matchScore) {
         updateProgress("Using existing job match scores");
         return jobs;
@@ -175,7 +174,7 @@ class ApiService {
       return result.jobs;
     } catch (error) {
       console.error("Error matching jobs with profile:", error);
-      // Instead of silently using a fallback, throw the error to be displayed in the UI
+
       throw new Error(
         `Failed to match jobs with profile: ${
           error instanceof Error ? error.message : "Unknown error"

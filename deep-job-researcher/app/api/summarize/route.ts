@@ -101,7 +101,6 @@ Respond ONLY with a valid JSON object containing these keys:
       });
       assistantId = assistant.id;
       console.log(`New Assistant created. ID: ${assistantId}`);
-      // TODO: Store this assistantId somewhere (e.g., env variable) to reuse it!
     } else {
       console.log(`Using existing Assistant ID: ${assistantId}`);
     }
@@ -171,19 +170,105 @@ Respond ONLY with a valid JSON object containing these keys:
     // === 8. Parse the JSON response from Assistant ===
     let extractedData: Partial<Summary>;
     try {
-      // Extract the JSON part, discarding surrounding text or markdown fences
-      // Use [\s\S] instead of . with s flag for broader compatibility
-      const jsonMatch = responseText.match(/\{([\s\S]*?)\}/);
-      if (!jsonMatch || !jsonMatch[0]) {
-        throw new Error(
-          "Could not find JSON object in the assistant's response.",
-        );
+      let jsonString = responseText;
+
+      // Strip markdown code blocks if present
+      jsonString = jsonString
+        .replace(/```json\s*/g, "")
+        .replace(/```\s*$/g, "");
+
+      // Find the JSON object
+      const match = jsonString.match(/\{[\s\S]*\}/);
+      if (match) {
+        jsonString = match[0];
       }
-      // Reconstruct the JSON string including the braces
-      const jsonString = `{${jsonMatch[1]}}`;
+
       // Log the exact string we are trying to parse
       console.log("Attempting to parse JSON string:", jsonString);
-      extractedData = JSON.parse(jsonString);
+
+      try {
+        // First attempt to parse as is
+        extractedData = JSON.parse(jsonString);
+      } catch (firstParseError) {
+        console.warn(
+          "Initial JSON parse failed, attempting to fix malformed JSON:",
+          firstParseError,
+        );
+
+        // Advanced JSON repair function
+        const repairJSON = (brokenJson: string): string => {
+          // Fix trailing commas in arrays and objects
+          let fixedJson = brokenJson
+            .replace(/,\s*]/g, "]")
+            .replace(/,\s*}/g, "}");
+
+          // Add missing commas between array elements
+          fixedJson = fixedJson.replace(/][ \t\n\r]*\[/g, "],[");
+          fixedJson = fixedJson.replace(/}[ \t\n\r]*{/g, "},{");
+          fixedJson = fixedJson.replace(/}[ \t\n\r]*\[/g, "},[");
+          fixedJson = fixedJson.replace(/][ \t\n\r]*{/g, "],{");
+
+          // Fix quotes - ensure property names are quoted
+          fixedJson = fixedJson.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+
+          // Fix missing commas in arrays (common error at position detection)
+          fixedJson = fixedJson.replace(/"[ \t\n\r]*"/g, '","');
+
+          // Fix double quotes inside already quoted strings
+          // We need to be careful with this one
+          fixedJson = fixedJson.replace(/"([^"]*)""/g, '"$1\\"');
+          fixedJson = fixedJson.replace(/""([^"]*)"/g, '\\"$1"');
+
+          // Delete any remaining invalid characters
+          fixedJson = fixedJson.replace(/[\x00-\x1F\x7F]/g, "");
+
+          return fixedJson;
+        };
+
+        // Apply repairs and try to parse again
+        jsonString = repairJSON(jsonString);
+        console.log("Attempting to parse repaired JSON string:", jsonString);
+
+        try {
+          extractedData = JSON.parse(jsonString);
+        } catch (secondParseError) {
+          // If still fails, try a more aggressive approach - manually build a valid JSON
+          console.warn(
+            "Repair attempt failed, trying more aggressive approach",
+          );
+
+          // Extract content from the malformed JSON - without using 's' flag
+          const skillsMatch = jsonString.match(/"skills"\s*:\s*\[([\s\S]*?)\]/);
+          const jobsMatch = jsonString.match(
+            /"job_profiles"\s*:\s*\[([\s\S]*?)\]/,
+          );
+          const nameMatch = jsonString.match(/"name"\s*:\s*"([^"]*)"/);
+          const titleMatch = jsonString.match(/"title"\s*:\s*"([^"]*)"/);
+          const summaryMatch = jsonString.match(
+            /"summary_text"\s*:\s*"([^"]*)"/,
+          );
+
+          // Reconstruct a minimal valid JSON
+          const skills = skillsMatch ? `[${skillsMatch[1]}]` : "[]";
+          const jobs = jobsMatch ? `[${jobsMatch[1]}]` : "[]";
+
+          // Build a clean JSON object
+          const cleanJson = `{
+            "skills": ${skills.replace(/'/g, '"').replace(/,\s*]/g, "]")},
+            "job_profiles": ${jobs.replace(/'/g, '"').replace(/,\s*]/g, "]")},
+            "name": ${nameMatch ? `"${nameMatch[1]}"` : "null"},
+            "title": ${titleMatch ? `"${titleMatch[1]}"` : "null"},
+            "summary_text": ${summaryMatch ? `"${summaryMatch[1]}"` : "null"}
+          }`;
+
+          console.log(
+            "Attempting to parse manually reconstructed JSON:",
+            cleanJson,
+          );
+          extractedData = JSON.parse(cleanJson);
+        }
+      }
+
       console.log("Successfully parsed Assistant JSON response");
     } catch (parseError: any) {
       console.error(
@@ -192,7 +277,6 @@ Respond ONLY with a valid JSON object containing these keys:
         "\nRaw Text Was:",
         responseText,
       );
-      // Include the original error message for better debugging
       throw new Error(
         `Invalid JSON format received from Assistant: ${parseError.message}`,
       );

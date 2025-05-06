@@ -2,16 +2,7 @@ import FirecrawlApp from "@mendable/firecrawl-js";
 import { z } from "zod";
 import { apiService } from "./api";
 import { ProgressCallback } from "./api";
-// TypeScript error fix: Comment out unused imports
-// import { FirecrawlClient, ScrapeResult, CrawlResult } from "firecrawl";
-// import { v4 as uuidv4 } from "uuid";
-// import { Readability } from "@mozilla/readability";
-// import { JSDOM } from "jsdom";
-// import { extractProfileData } from "../utils/profileExtractor";
-// import { parseResume } from "../utils/resumeParser";
-// import { type JobDetailedData, type JobSearchFilters } from "../types/job";
 
-// For PDF.js dynamic import
 declare global {
   interface Window {
     pdfjsLib: any;

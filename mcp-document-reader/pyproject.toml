@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-document-reader"
+version = "0.1.0"
+description = "MCP server for reading and extracting text from PDF and DOCX files"
+readme = "README.md"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "mcp>=1.2.0",
+    "markitdown[all]",
+]
+requires-python = ">=3.9"
+
+[project.scripts]
+mcp-document-reader = "document_reader.server:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}

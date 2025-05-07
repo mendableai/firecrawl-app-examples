@@ -1,12 +1,10 @@
 import OpenAI from "openai";
 import { ResumeData, JobData } from "./firecrawl";
 
-// We'll only use this service on the server side through API routes
 class OpenAIService {
   private client: OpenAI;
 
   constructor() {
-    // This will only be used in API routes
     this.client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || "",
     });
@@ -17,20 +15,16 @@ class OpenAIService {
     jobs: JobData[],
     analysisText: string,
   ): Promise<JobData[]> {
-    // This method should be called from an API route
     console.log("Matching jobs to profile based on skills and experience");
 
-    // Throw an error if no OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
       throw new Error("OpenAI API key not configured");
     }
 
-    // If jobs already have match scores, return them
     if (jobs.length > 0 && jobs[0].matchScore) {
       return jobs;
     }
 
-    // Create a prompt that describes the matching task
     const userSkills = profile.skills?.join(", ") || "";
     const userExperience =
       profile.experience
@@ -41,7 +35,6 @@ class OpenAIService {
         ?.map((edu) => `${edu.degree} from ${edu.institution}`)
         .join(", ") || "";
 
-    // Creating a concise representation of the profile
     const profileSummary = `
       Name: ${profile.name || "Unknown"}
       Title: ${profile.title || "Unknown"}
@@ -51,7 +44,6 @@ class OpenAIService {
       Summary: ${profile.summary || ""}
     `;
 
-    // Prepare job data for matching
     const jobsData = jobs.map((job) => {
       return {
         title: job.title,
@@ -95,11 +87,9 @@ class OpenAIService {
         response_format: { type: "json_object" },
       });
 
-      // Parse the response and update the job data
       const content = response.choices[0]?.message.content || "{}";
       const matchedJobs = JSON.parse(content);
 
-      // Combine the original job data with the match scores and reasons
       if (Array.isArray(matchedJobs.jobs)) {
         return matchedJobs.jobs
           .map((matchedJob: any) => {
@@ -125,7 +115,7 @@ class OpenAIService {
       throw new Error("Unexpected response format from OpenAI API");
     } catch (error) {
       console.error("Error matching jobs:", error);
-      throw error; // Propagate the error to be handled by the caller
+      throw error; 
     }
   }
 }

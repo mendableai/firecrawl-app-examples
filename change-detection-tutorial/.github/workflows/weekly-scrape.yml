@@ -1,0 +1,45 @@
+name: Weekly Scraping Bullet Echo Base URL
+
+on:
+  schedule:
+    # Run at midnight (00:00) on the first day of every week
+    - cron: "0 0 * * 1"
+  workflow_dispatch: # Allow manual triggering
+
+# Add permissions to allow GitHub Actions to push changes
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Run scraping script
+        run: python src/weekly_scrape.py
+        env:
+          # Include any environment variables needed by the script
+          # These should be set as secrets in your repository settings
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add data/
+          git commit -m "Update data from weekly scrape" || echo "No changes to commit"
+          git push

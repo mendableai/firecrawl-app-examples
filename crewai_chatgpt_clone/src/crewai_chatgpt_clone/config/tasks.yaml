@@ -1,17 +1,16 @@
-research_task:
+answer_user_query_task:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
-  expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+    Process the user's message and classify its intent into one of the following:
+    1. General question (answer yourself),
+    2. Real-time factual lookup (delegate to Search Agent),
+    3. Comprehensive research (delegate to Research Agent),
+    4. Web scraping (delegate to Scraper Agent),
+    5. Image generation (delegate to Image Agent).
 
-reporting_task:
-  description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    Based on the intent, trigger the appropriate agent, compile their response, and deliver a final, well-structured answer to the user.
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    A finalized user response. This can include:
+    - Text answers
+    - Image links (with short captions)
+    - Research summaries
+    - Scraped data in markdown or tabular format

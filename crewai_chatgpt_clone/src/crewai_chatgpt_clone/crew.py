@@ -1,64 +1,110 @@
-from crewai import Agent, Crew, Process, Task
-from crewai.project import CrewBase, agent, crew, task
+# src/chatgpt_clone/crew.py
+
+from crewai import Crew, Process, Agent, Task
+from crewai.project import CrewBase, agent, task, crew
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
-# If you want to run a snippet of code before or after the crew starts,
-# you can use the @before_kickoff and @after_kickoff decorators
-# https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
+
+# Tool imports
+from crewai_chatgpt_clone.tools.firecrawl_search_tool import firecrawl_search_tool
+from crewai_chatgpt_clone.tools.firecrawl_research_tool import firecrawl_research_tool
+from crewai_chatgpt_clone.tools.firecrawl_extract_tool import firecrawl_extract_tool
+from crewai_chatgpt_clone.tools.openai_image_tool import openai_image_tool
+
 
 @CrewBase
-class CrewaiChatgptClone():
-    """CrewaiChatgptClone crew"""
+class ChatgptCloneCrew:
+    """ChatgptCloneCrew using CrewBase for structured agent and task definition."""
 
+    agents_config = "config/agents.yaml"
+    tasks_config = "config/tasks.yaml"
+
+    # Added type hints
     agents: List[BaseAgent]
     tasks: List[Task]
 
-    # Learn more about YAML configuration files here:
-    # Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
-    # Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
-    
-    # If you would like to add tools to your agents, you can learn more about it here:
-    # https://docs.crewai.com/concepts/agents#agent-tools
     @agent
-    def researcher(self) -> Agent:
+    def chat_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['researcher'], # type: ignore[index]
-            verbose=True
+            config=self.agents_config["chat_agent"],  # type: ignore[index]
+            tools=[],
+            verbose=True,
         )
 
     @agent
-    def reporting_analyst(self) -> Agent:
+    def search_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['reporting_analyst'], # type: ignore[index]
-            verbose=True
+            config=self.agents_config["search_agent"],  # type: ignore[index]
+            tools=[firecrawl_search_tool],
+            verbose=True,
         )
 
-    # To learn more about structured task outputs,
-    # task dependencies, and task callbacks, check out the documentation:
-    # https://docs.crewai.com/concepts/tasks#overview-of-a-task
-    @task
-    def research_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['research_task'], # type: ignore[index]
+    @agent
+    def research_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config["research_agent"],  # type: ignore[index]
+            tools=[firecrawl_research_tool],
+            verbose=True,
         )
 
+    @agent
+    def scraper_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config["scraper_agent"],  # type: ignore[index]
+            tools=[firecrawl_extract_tool],
+            verbose=True,
+        )
+
+    @agent
+    def image_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config["image_agent"],  # type: ignore[index]
+            tools=[openai_image_tool],
+            verbose=True,
+        )
+
+    # --- TASKS ---
     @task
-    def reporting_task(self) -> Task:
+    def answer_user_query_task(self) -> Task:
+        """Task to process the user's query, classify intent, delegate, and compile the final response."""
         return Task(
-            config=self.tasks_config['reporting_task'], # type: ignore[index]
-            output_file='report.md'
+            config=self.tasks_config["answer_user_query_task"],  # type: ignore[index]
+            agent=self.chat_agent(),  # This task is primarily handled by the chat_agent
         )
 
     @crew
     def crew(self) -> Crew:
-        """Creates the CrewaiChatgptClone crew"""
-        # To learn how to add knowledge sources to your crew, check out the documentation:
-        # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
-
+        # This will collect all agents defined with @agent
+        # and tasks defined with @task.
+        # Ensure your @task methods are defined above for them to be included.
         return Crew(
-            agents=self.agents, # Automatically created by the @agent decorator
-            tasks=self.tasks, # Automatically created by the @task decorator
+            agents=self.agents,  # Populated by @agent decorators
+            tasks=self.tasks,  # Populated by @task decorators - ADD YOURS!
             process=Process.sequential,
             verbose=True,
-            # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
         )
+
+
+def run_chatgpt_clone(user_input: str):
+    """Initializes and runs the ChatGPT clone crew."""
+    chat_crew_instance = ChatgptCloneCrew()
+    # Ensure tasks in tasks.yaml can accept {user_input}
+    result = chat_crew_instance.crew().kickoff(inputs={"user_input": user_input})
+    return result
+
+
+# Example usage (optional, for testing)
+# if __name__ == "__main__":
+#     print(
+#         "Testing ChatGPT Clone Crew (ensure tasks are defined in crew.py and in tasks.yaml):"
+#     )
+#     try:
+#         response = run_chatgpt_clone("What is the future of AI?")
+#         print("\nFinal Response:")
+#         print(response)
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+#         print("Please ensure you have defined @task methods in ChatgptCloneCrew class,")
+#         print(
+#             "and that your 'src/chatgpt_clone/config/tasks.yaml' is correctly configured."
+#         )

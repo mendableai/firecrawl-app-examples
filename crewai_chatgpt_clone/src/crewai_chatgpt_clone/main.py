@@ -1,66 +1,26 @@
 #!/usr/bin/env python
-import sys
-import warnings
+import os
+from crewai_chatgpt_clone.crew import ChatgptCloneCrew
 
-from datetime import datetime
-
-from crewai_chatgpt_clone.crew import CrewaiChatgptClone
-
-warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
-
-# This main file is intended to be a way for you to run your
-# crew locally, so refrain from adding unnecessary logic into this file.
-# Replace with inputs you want to test with, it will automatically
-# interpolate any tasks and agents information
+os.makedirs("output", exist_ok=True)
 
 
 def run():
-    """
-    Run the crew.
-    """
-    inputs = {"topic": "AI LLMs", "current_year": str(datetime.now().year)}
+    """Run the ChatGPT clone crew."""
+    user_query = "Find me the latest news on the stock market."
+    print(f"Running crew with user input: {user_query}")
 
-    try:
-        CrewaiChatgptClone().crew().kickoff(inputs=inputs)
-    except Exception as e:
-        raise Exception(f"An error occurred while running the crew: {e}")
+    inputs = {"user_input": user_query}
+    crew_instance = ChatgptCloneCrew()
+    result = crew_instance.crew().kickoff(inputs=inputs)
 
-
-def train():
-    """
-    Train the crew for a given number of iterations.
-    """
-    inputs = {"topic": "AI LLMs", "current_year": str(datetime.now().year)}
-    try:
-        CrewaiChatgptClone().crew().train(
-            n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs
-        )
-
-    except Exception as e:
-        raise Exception(f"An error occurred while training the crew: {e}")
+    # Print the result (assuming result has a .raw attribute or is a string)
+    print("\n\n=== CREW RESPONSE ===\n\n")
+    if hasattr(result, "raw"):
+        print(result.raw)
+    else:
+        print(result)  # Fallback if no .raw attribute
 
 
-def replay():
-    """
-    Replay the crew execution from a specific task.
-    """
-    try:
-        CrewaiChatgptClone().crew().replay(task_id=sys.argv[1])
-
-    except Exception as e:
-        raise Exception(f"An error occurred while replaying the crew: {e}")
-
-
-def test():
-    """
-    Test the crew execution and returns the results.
-    """
-    inputs = {"topic": "AI LLMs", "current_year": str(datetime.now().year)}
-
-    try:
-        CrewaiChatgptClone().crew().test(
-            n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs
-        )
-
-    except Exception as e:
-        raise Exception(f"An error occurred while testing the crew: {e}")
+if __name__ == "__main__":
+    run()

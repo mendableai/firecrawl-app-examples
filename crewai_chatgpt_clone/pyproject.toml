@@ -10,6 +10,7 @@ dependencies = [
     "ipykernel>=6.29.5",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
+    "streamlit>=1.45.1",
 ]
 
 [project.scripts]

@@ -1,6 +1,6 @@
 # src/chatgpt_clone/crew.py
 
-from crewai import Crew, Process, Agent, Task
+from crewai import Crew, Process, Agent, Task, LLM
 from crewai.project import CrewBase, agent, task, crew
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
@@ -29,6 +29,7 @@ class ChatgptCloneCrew:
             config=self.agents_config["chat_agent"],  # type: ignore[index]
             tools=[],
             verbose=True,
+            llm=LLM(model="gpt-4o", stream=True),
         )
 
     @agent

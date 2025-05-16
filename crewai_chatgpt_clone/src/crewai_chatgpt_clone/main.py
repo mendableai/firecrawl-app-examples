@@ -7,7 +7,7 @@ os.makedirs("output", exist_ok=True)
 
 def run():
     """Run the ChatGPT clone crew."""
-    user_query = "Generate a logo for a company that makes organic skincare products."
+    user_query = "Generate me a loooooong poem in the style of Alisher Navoi."
     print(f"Running crew with user input: {user_query}")
 
     inputs = {"user_input": user_query}

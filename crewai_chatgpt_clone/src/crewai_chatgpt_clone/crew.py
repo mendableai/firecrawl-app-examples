@@ -83,28 +83,3 @@ class ChatgptCloneCrew:
             process=Process.sequential,
             verbose=True,
         )
-
-
-def run_chatgpt_clone(user_input: str):
-    """Initializes and runs the ChatGPT clone crew."""
-    chat_crew_instance = ChatgptCloneCrew()
-    # Ensure tasks in tasks.yaml can accept {user_input}
-    result = chat_crew_instance.crew().kickoff(inputs={"user_input": user_input})
-    return result
-
-
-# Example usage (optional, for testing)
-# if __name__ == "__main__":
-#     print(
-#         "Testing ChatGPT Clone Crew (ensure tasks are defined in crew.py and in tasks.yaml):"
-#     )
-#     try:
-#         response = run_chatgpt_clone("What is the future of AI?")
-#         print("\nFinal Response:")
-#         print(response)
-#     except Exception as e:
-#         print(f"An error occurred: {e}")
-#         print("Please ensure you have defined @task methods in ChatgptCloneCrew class,")
-#         print(
-#             "and that your 'src/chatgpt_clone/config/tasks.yaml' is correctly configured."
-#         )

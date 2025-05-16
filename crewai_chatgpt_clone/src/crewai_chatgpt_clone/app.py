@@ -4,6 +4,23 @@ import time
 import gc
 import base64
 
+# Apply custom CSS to fix styling issues
+st.markdown(
+    """
+<style>
+    /* Ensure clean rendering of messages */
+    .stChatMessage {
+        overflow: hidden;
+    }
+    /* Hide any ghost/duplicate messages */
+    .stChatMessage div[data-testid="stChatMessageContent"] > div:nth-child(n+2) {
+        display: none !important;
+    }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 st.markdown(
     """
     # ChatGPT Clone powered by <img src="data:image/png;base64,{}" width="120" style="vertical-align: -3px;"> and 🔥Firecrawl
@@ -50,45 +67,57 @@ if user_query:
     with st.chat_message("user"):
         st.markdown(user_query)
 
-    # Create a placeholder for the assistant's message
-    assistant_placeholder = st.chat_message("assistant")
+    # Force a rerun to render the user message before proceeding
+    # This helps create a clean separation between user input and AI processing
+    st.rerun()
 
-    with assistant_placeholder:
-        # Show a spinner while processing
-        with st.spinner("Processing your query..."):
-            crew_instance = ChatgptCloneCrew()
-            inputs = {"user_input": user_query}
+# Check if we need to generate a response (if the last message was from the user)
+if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+    user_query = st.session_state.messages[-1]["content"]
 
-            try:
-                result_obj = crew_instance.crew().kickoff(inputs=inputs)
+    # Create a container for processing spinner and assistant response
+    response_container = st.container()
 
-                response_text = ""
-                if hasattr(result_obj, "raw") and isinstance(result_obj.raw, str):
-                    response_text = result_obj.raw
-                elif isinstance(result_obj, str):
-                    response_text = result_obj
-                else:
-                    # Fallback if the structure is unexpected
-                    response_text = str(result_obj)
+    with response_container:
+        with st.chat_message("assistant"):
+            with st.spinner("Processing your query..."):
+                crew_instance = ChatgptCloneCrew()
+                inputs = {"user_input": user_query}
 
-                # Implement the typewriter streaming effect - using an empty container inside the message
-                message_placeholder = st.empty()
-                full_response_streamed = ""
+                try:
+                    result_obj = crew_instance.crew().kickoff(inputs=inputs)
 
-                for char in response_text:
-                    full_response_streamed += char
-                    message_placeholder.markdown(full_response_streamed + "▌")
-                    time.sleep(0.01)  # Adjust for desired speed
+                    response_text = ""
+                    if hasattr(result_obj, "raw") and isinstance(result_obj.raw, str):
+                        response_text = result_obj.raw
+                    elif isinstance(result_obj, str):
+                        response_text = result_obj
+                    else:
+                        # Fallback if the structure is unexpected
+                        response_text = str(result_obj)
 
-                # Final display without cursor
-                message_placeholder.markdown(full_response_streamed)
+                    # Typewriter effect
+                    message_placeholder = st.empty()
+                    full_response = ""
 
-                # Only add to session state after the typewriter effect is complete
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": full_response_streamed}
-                )
+                    for char in response_text:
+                        full_response += char
+                        message_placeholder.markdown(full_response + "▌")
+                        time.sleep(0.01)
 
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
-                # Optionally add error to chat history
-                # st.session_state.messages.append({"role": "assistant", "content": f"Error: {e}"})
+                    # Final display without cursor
+                    message_placeholder.markdown(full_response)
+
+                    # Add to session state after completing display
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": full_response}
+                    )
+
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
+                    st.session_state.messages.append(
+                        {
+                            "role": "assistant",
+                            "content": f"Sorry, an error occurred: {e}",
+                        }
+                    )

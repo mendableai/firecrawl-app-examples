@@ -8,14 +8,6 @@ import base64
 st.markdown(
     """
 <style>
-    /* Ensure clean rendering of messages */
-    .stChatMessage {
-        overflow: hidden;
-    }
-    /* Hide any ghost/duplicate messages */
-    .stChatMessage div[data-testid="stChatMessageContent"] > div:nth-child(n+2) {
-        display: none !important;
-    }
     /* Footer styling */
     .footer {
         position: fixed;
@@ -164,7 +156,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 st.markdown(
     """
     <div class="footer">
-        <p style="margin: 0;">📚 <a href="https://docs.crewai.com" target="_blank">Read the documentation</a> to learn more about this app</p>
+        <p style="margin: 0;">📚 <a href="https://firecrawl.dev/blog/crewai-multi-agent-systems-tutorial" target="_blank">Read the article on our blog</a> to learn more about this app</p>
     </div>
     """,
     unsafe_allow_html=True,

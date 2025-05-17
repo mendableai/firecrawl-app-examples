@@ -16,40 +16,78 @@ st.markdown(
     .stChatMessage div[data-testid="stChatMessageContent"] > div:nth-child(n+2) {
         display: none !important;
     }
+    /* Footer styling */
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: rgba(240, 242, 246, 0.9);
+        color: #262730;
+        text-align: center;
+        padding: 3px;
+        font-size: 12px;
+        z-index: 999;
+        border-top: 1px solid #e6e9ef;
+    }
+    .footer a {
+        color: #0068c9;
+        text-decoration: none;
+    }
+    .footer a:hover {
+        text-decoration: underline;
+    }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    """
-    # ChatGPT Clone powered by <img src="data:image/png;base64,{}" width="120" style="vertical-align: -3px;"> and 🔥Firecrawl
-""".format(
-        base64.b64encode(
-            open("src/crewai_chatgpt_clone/assets/crewai.png", "rb").read()
-        ).decode()
-    ),
-    unsafe_allow_html=True,
-)
 
+# --- Helper Functions ---
+def reset_chat():
+    st.session_state.messages = [st.session_state.messages[0]]
+    gc.collect()
+
+
+# Create a header with title on left and reset button on right
+col1, col2 = st.columns([7, 1])  # Adjust ratio as needed
+with col1:
+    st.markdown(
+        """
+        # ChatGPT Clone powered by <img src="data:image/png;base64,{}" width="120" style="vertical-align: -3px;"> and 🔥Firecrawl
+    """.format(
+            base64.b64encode(
+                open("src/crewai_chatgpt_clone/assets/crewai.png", "rb").read()
+            ).decode()
+        ),
+        unsafe_allow_html=True,
+    )
+    st.markdown("AI Assistant with specialized agents for various tasks")
+
+with col2:
+    # Create a reset button with trash can icon
+    if st.button("🗑️", help="Clear chat history"):
+        reset_chat()
+        st.rerun()
 
 # --- Session State Initialization ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+    # Add initial welcome message
+    welcome_message = """
+Hello! I can assist you with a variety of tasks using specialized agents:
 
-# --- Helper Functions ---
-def reset_chat():
-    st.session_state.messages = []
-    gc.collect()
+1. **General Questions** - I can answer general knowledge questions
+2. **Web Search** - I can search the web for real-time information
+3. **In-depth Research** - I can conduct comprehensive research on topics
+4. **Web Scraping** - I can extract specific data from websites
+5. **Image Generation** - I can create images based on descriptions
 
+What would you like help with today?
+"""
+    st.session_state.messages.append({"role": "assistant", "content": welcome_message})
 
-# --- Sidebar ---
-with st.sidebar:
-    st.header("Chat Controls")
-    if st.button("Clear Chat History"):
-        reset_chat()
-        st.rerun()
 
 # --- Main Chat Interface ---
 
@@ -121,3 +159,13 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                             "content": f"Sorry, an error occurred: {e}",
                         }
                     )
+
+# Add footer with documentation link
+st.markdown(
+    """
+    <div class="footer">
+        <p style="margin: 0;">📚 <a href="https://docs.crewai.com" target="_blank">Read the documentation</a> to learn more about this app</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)

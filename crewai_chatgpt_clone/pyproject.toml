@@ -1,0 +1,28 @@
+[project]
+name = "crewai_chatgpt_clone"
+version = "0.1.0"
+description = "crewai-chatgpt-clone using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[tools]>=0.119.0,<1.0.0",
+    "firecrawl-py>=2.5.4",
+    "ipykernel>=6.29.5",
+    "pydantic>=2.11.4",
+    "python-dotenv>=1.1.0",
+    "streamlit>=1.45.1",
+]
+
+[project.scripts]
+crewai_chatgpt_clone = "crewai_chatgpt_clone.main:run"
+run_crew = "crewai_chatgpt_clone.main:run"
+train = "crewai_chatgpt_clone.main:train"
+replay = "crewai_chatgpt_clone.main:replay"
+test = "crewai_chatgpt_clone.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"

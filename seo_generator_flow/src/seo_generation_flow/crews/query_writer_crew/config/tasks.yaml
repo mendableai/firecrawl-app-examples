@@ -1,0 +1,6 @@
+generate_queries_task:
+  description: >
+    Generate a list of search queries for a given topic that the user is likely to use to search for information about the topic.
+  expected_output: >
+    A list of search queries for the user's given topic which is {topic}. Generate a total of {total_search_queries} search queries.
+  agent: query_writer_agent

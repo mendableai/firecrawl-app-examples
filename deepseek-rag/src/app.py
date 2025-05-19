@@ -6,6 +6,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from rag import DocumentationRAG
 from scraper import DocumentationScraper
+from web_scraper import WebScraper
 
 load_dotenv()
 
@@ -34,6 +35,14 @@ def get_doc_page_count(docs_dir: str) -> int:
 def scraping_config_section():
     """Create the documentation scraping configuration section"""
     st.markdown("### Configure Scraping")
+    
+    # Add scraper selection
+    scraper_type = st.radio(
+        "Select Scraper",
+        ["Firecrawl Scraper", "Web Scraper"],
+        help="Choose which scraper to use for documentation extraction"
+    )
+    
     base_url = st.text_input(
         "Documentation URL",
         placeholder="https://docs.firecrawl.dev",
@@ -46,16 +55,35 @@ def scraping_config_section():
         help="Name of the directory to store documentation",
     )
 
-    n_pages = st.number_input(
-        "Number of Pages",
-        min_value=0,
-        value=0,
-        help="Limit the number of pages to scrape (0 for all pages)",
-    )
+    # Show different options based on selected scraper
+    if scraper_type == "Web Scraper":
+        col1, col2 = st.columns(2)
+        with col1:
+            max_pages = st.number_input(
+                "Maximum Pages",
+                min_value=1,
+                value=10,
+                help="Maximum number of pages to scrape",
+            )
+        with col2:
+            delay = st.number_input(
+                "Delay (seconds)",
+                min_value=0.5,
+                value=1.0,
+                step=0.5,
+                help="Delay between requests in seconds",
+            )
+    else:  # Firecrawl Scraper
+        n_pages = st.number_input(
+            "Number of Pages",
+            min_value=0,
+            value=0,
+            help="Limit the number of pages to scrape (0 for all pages)",
+        )
 
     st.info(
         "💡 Add '-docs' suffix to the documentation name. "
-        "Set pages to 0 to scrape all available pages."
+        "Set pages to 0 to scrape all available pages (Firecrawl Scraper only)."
     )
 
     # Add scrape button
@@ -67,9 +95,18 @@ def scraping_config_section():
         else:
             with st.spinner("Scraping documentation..."):
                 try:
-                    scraper = DocumentationScraper()
-                    n_pages = None if n_pages == 0 else n_pages
-                    scraper.pull_docs(base_url, docs_name, n_pages=n_pages)
+                    if scraper_type == "Firecrawl Scraper":
+                        scraper = DocumentationScraper()
+                        n_pages = None if n_pages == 0 else n_pages
+                        scraper.pull_docs(base_url, docs_name, n_pages=n_pages)
+                    else:  # Web Scraper
+                        scraper = WebScraper(
+                            base_url=base_url,
+                            output_dir=docs_name,
+                            max_pages=max_pages,
+                            delay=delay
+                        )
+                        scraper.scrape()
                     st.success("Documentation scraped successfully!")
                 except Exception as e:
                     st.error(f"Error scraping documentation: {str(e)}")

@@ -10,7 +10,9 @@ class DocumentationRAG:
         # Initialize embeddings and vector store
         self.embeddings = OllamaEmbeddings(model="nomic-embed-text")
         self.vector_store = Chroma(
-            embedding_function=self.embeddings, persist_directory="./chroma_db"
+            collection_name="documentation_rag",
+            embedding_function=self.embeddings,
+            persist_directory="./chroma_db"
         )
 
         # Initialize LLM
@@ -44,9 +46,11 @@ class DocumentationRAG:
 
     def process_documents(self, docs_dir: str):
         """Process documents and add to vector store"""
-        # Clear existing documents
+        # Create a new Chroma instance for processing
         self.vector_store = Chroma(
-            embedding_function=self.embeddings, persist_directory="./chroma_db"
+            collection_name="documentation_rag",
+            embedding_function=self.embeddings,
+            persist_directory="./chroma_db"
         )
 
         # Load and process new documents

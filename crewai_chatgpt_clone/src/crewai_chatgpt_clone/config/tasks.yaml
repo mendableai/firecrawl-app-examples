@@ -1,0 +1,16 @@
+answer_user_query_task:
+  description: >
+    Process the user's message and classify its intent into one of the following:
+    1. General question (answer yourself),
+    2. Real-time factual lookup (delegate to Search Agent),
+    3. Comprehensive research (delegate to Research Agent),
+    4. Web scraping (delegate to Scraper Agent),
+    5. Image generation (delegate to Image Agent).
+
+    Based on the intent, trigger the appropriate agent, compile their response, and deliver a final, well-structured answer to the user.
+  expected_output: >
+    A finalized user response. This can include:
+    - Text answers
+    - Image links (with short captions)
+    - Research summaries
+    - Scraped data in markdown or tabular format

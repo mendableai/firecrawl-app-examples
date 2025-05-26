@@ -88,7 +88,13 @@ class ChatEngine:
             return f"❌ **Error:** {str(e)}"
 
     def stream_text_response(
-        self, messages: List[Dict], tools: List[Dict] = None, placeholder=None
+        self,
+        messages: List[Dict],
+        tools: List[Dict] = None,
+        placeholder=None,
+        max_depth: int = 5,
+        time_limit: int = 180,
+        max_urls: int = 20,
     ) -> str:
         """Stream response from Claude with official streaming."""
         client = self.client_manager.get_anthropic_client()
@@ -121,6 +127,11 @@ class ChatEngine:
                             tool_name = content_block.name
                             tool_input = content_block.input
                             tool_id = content_block.id
+
+                            # Extend tool input with max_depth, time_limit, and max_urls
+                            tool_input["max_depth"] = max_depth
+                            tool_input["time_limit"] = time_limit
+                            tool_input["max_urls"] = max_urls
 
                             if tool_name == "deep_research":
                                 # Execute deep research

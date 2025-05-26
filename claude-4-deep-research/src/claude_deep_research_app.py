@@ -5,9 +5,6 @@ from config import (
     APP_TITLE,
     APP_CAPTION,
     WELCOME_MESSAGE,
-    DEFAULT_RESEARCH_DEPTH,
-    DEFAULT_TIME_LIMIT,
-    DEFAULT_MAX_URLS,
 )
 
 # Load environment variables
@@ -74,21 +71,21 @@ def main():
             "Research Depth",
             1,
             10,
-            DEFAULT_RESEARCH_DEPTH,
+            5,
             help="Maximum number of research iterations",
         )
         time_limit = st.slider(
             "Time Limit (seconds)",
             30,
             300,
-            DEFAULT_TIME_LIMIT,
+            180,
             help="Maximum time for research",
         )
         max_urls = st.slider(
             "Max URLs",
             1,
             100,
-            DEFAULT_MAX_URLS,
+            20,
             help="Maximum number of URLs to analyze",
         )
 
@@ -169,6 +166,9 @@ def main():
                     claude_messages,
                     [research_engine.get_tool_definition()],
                     response_placeholder,
+                    max_depth=max_depth,
+                    time_limit=time_limit,
+                    max_urls=max_urls,
                 )
 
             # Add assistant response to session state

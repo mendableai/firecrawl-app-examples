@@ -8,6 +8,7 @@ dependencies = [
     "anthropic>=0.52.0",
     "firecrawl-py>=2.7.0",
     "python-dotenv>=1.1.0",
+    "streamlit>=1.45.1",
 ]
 
 [dependency-groups]

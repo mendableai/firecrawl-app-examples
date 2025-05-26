@@ -13,7 +13,7 @@ def main():
     """Launch the Streamlit application."""
     # Get the directory where this script is located
     script_dir = Path(__file__).parent
-    app_path = script_dir / "src" / "claude_deep_research_app.py"
+    app_path = script_dir / "src" / "app.py"
 
     # Check if the app file exists
     if not app_path.exists():

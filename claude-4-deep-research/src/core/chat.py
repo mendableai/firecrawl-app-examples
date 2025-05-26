@@ -6,6 +6,7 @@ import json
 from typing import Dict, List
 from .clients import ClientManager
 from .research import ResearchEngine
+from config import CLAUDE_SYSTEM_PROMPT
 
 
 class ChatEngine:
@@ -26,6 +27,7 @@ class ChatEngine:
             request_params = {
                 "model": "claude-sonnet-4-20250514",
                 "max_tokens": 4000,
+                "system": CLAUDE_SYSTEM_PROMPT,
                 "messages": messages,
             }
 

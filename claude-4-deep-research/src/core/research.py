@@ -18,8 +18,8 @@ class ResearchEngine:
             "name": "deep_research",
             "description": """Conduct comprehensive deep research on any topic using web crawling and AI analysis. 
             This tool searches the web, analyzes multiple sources, and synthesizes findings into detailed insights.
-            Use this when the user asks for in-depth research, current information, or comprehensive analysis on a topic.
-            The tool will return structured findings with source attribution and detailed analysis.""",
+            Use this only when the user explicitly asks for in-depth research, or comprehensive analysis on a topic. If you can answer the question without needing to get more information, please do so. Only call the tool when needed.
+            The tool will return structured findings with source attribution and detailed analysis. If a tool is not required, respond as normal""",
             "input_schema": {
                 "type": "object",
                 "properties": {

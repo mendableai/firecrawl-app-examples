@@ -183,8 +183,7 @@ def main():
     st.markdown(
         """
     <div class="footer">
-        <p style="margin: 0;">🔍 Powered by Claude 4 & Firecrawl Deep Research | 
-        <a href="https://docs.firecrawl.dev/features/alpha/deep-research" target="_blank">Learn more about Deep Research</a></p>
+        <p style="margin: 0;">Read the breakdown explanation of this article <a href="https://docs.firecrawl.dev/blog/claude-deep-research" target="_blank">on Firecrawl's blog.</a></p>
     </div>
     """,
         unsafe_allow_html=True,

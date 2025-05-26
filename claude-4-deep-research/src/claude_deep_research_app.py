@@ -9,7 +9,6 @@ from config import (
     DEFAULT_RESEARCH_DEPTH,
     DEFAULT_TIME_LIMIT,
     DEFAULT_MAX_URLS,
-    TYPEWRITER_DELAY,
 )
 
 # Load environment variables
@@ -169,12 +168,6 @@ def main():
                     "🔍 **This looks like a research request. I may use deep research tools...**"
                 )
 
-            # Get response from Claude
-            with st.spinner("Generating response..."):
-                response_text = chat_engine.get_response_with_tools(
-                    claude_messages, [research_engine.get_tool_definition()]
-                )
-
             # Clear status messages
             st.empty()
 
@@ -182,17 +175,13 @@ def main():
             with st.chat_message("assistant"):
                 # Create placeholder for streaming response
                 response_placeholder = st.empty()
-                full_response = ""
 
-                # Stream the response with typewriter effect
-                for chunk in chat_engine.stream_text_response(
-                    response_text, delay=TYPEWRITER_DELAY
-                ):
-                    full_response += chunk
-                    response_placeholder.markdown(full_response + "▌")
-
-                # Final display without cursor
-                response_placeholder.markdown(full_response)
+                # Stream the response with official Anthropic streaming
+                full_response = chat_engine.stream_text_response(
+                    claude_messages,
+                    [research_engine.get_tool_definition()],
+                    response_placeholder,
+                )
 
             # Add assistant response to session state
             st.session_state.messages.append(

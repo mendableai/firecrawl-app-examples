@@ -1,174 +1,34 @@
 import streamlit as st
-import anthropic
-from firecrawl import FirecrawlApp
-import json
 import os
 from dotenv import load_dotenv
-import time
-from typing import Dict, Any, List, Generator, Optional
+from core import ClientManager, ResearchEngine, ChatEngine
+from config import (
+    APP_TITLE,
+    APP_CAPTION,
+    WELCOME_MESSAGE,
+    DEFAULT_RESEARCH_DEPTH,
+    DEFAULT_TIME_LIMIT,
+    DEFAULT_MAX_URLS,
+    TYPEWRITER_DELAY,
+)
 
 # Load environment variables
 load_dotenv()
 
 
-# Initialize clients
+# Initialize core components
 @st.cache_resource
-def get_anthropic_client():
-    """Initialize Anthropic client with API key from environment."""
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        st.error(
-            "Please set your ANTHROPIC_API_KEY in the environment variables or .env file"
-        )
-        st.stop()
-    return anthropic.Anthropic(api_key=api_key)
-
-
-@st.cache_resource
-def get_firecrawl_client():
-    """Initialize Firecrawl client with API key from environment."""
-    api_key = os.getenv("FIRECRAWL_API_KEY")
-    if not api_key:
-        st.error(
-            "Please set your FIRECRAWL_API_KEY in the environment variables or .env file"
-        )
-        st.stop()
-    return FirecrawlApp(api_key=api_key)
-
-
-# Tool definition for Firecrawl deep research
-DEEP_RESEARCH_TOOL = {
-    "name": "deep_research",
-    "description": """Conduct comprehensive deep research on any topic using web crawling and AI analysis. 
-    This tool searches the web, analyzes multiple sources, and synthesizes findings into detailed insights.
-    Use this when the user asks for in-depth research, current information, or comprehensive analysis on a topic.
-    The tool will return structured findings with source attribution and detailed analysis.""",
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "query": {
-                "type": "string",
-                "description": "The research topic or question to investigate",
-            },
-            "max_depth": {
-                "type": "integer",
-                "description": "Maximum number of research iterations (1-10, default: 5)",
-                "minimum": 1,
-                "maximum": 10,
-                "default": 5,
-            },
-            "time_limit": {
-                "type": "integer",
-                "description": "Time limit in seconds (30-300, default: 180)",
-                "minimum": 30,
-                "maximum": 300,
-                "default": 180,
-            },
-            "max_urls": {
-                "type": "integer",
-                "description": "Maximum number of URLs to analyze (1-1000, default: 20)",
-                "minimum": 1,
-                "maximum": 1000,
-                "default": 20,
-            },
-        },
-        "required": ["query"],
-    },
-}
-
-
-def execute_deep_research(
-    query: str, max_depth: int = 5, time_limit: int = 180, max_urls: int = 20
-) -> Dict[str, Any]:
-    """Execute deep research using Firecrawl."""
+def get_core_components():
+    """Initialize and return core application components."""
     try:
-        firecrawl = get_firecrawl_client()
-
-        # Run deep research
-        result = firecrawl.deep_research(
-            query=query, max_depth=max_depth, time_limit=time_limit, max_urls=max_urls
-        )
-
-        return {"success": True, "data": result.get("data", {}), "query": query}
-
-    except Exception as e:
-        return {"success": False, "error": str(e), "query": query}
-
-
-def get_claude_response_with_tools(
-    messages: List[Dict], tools: List[Dict] = None
-) -> str:
-    """Get response from Claude with tool support (non-streaming for tool handling)."""
-    client = get_anthropic_client()
-
-    try:
-        # Create the message request
-        request_params = {
-            "model": "claude-3-5-sonnet-20241022",
-            "max_tokens": 4000,
-            "messages": messages,
-        }
-
-        if tools:
-            request_params["tools"] = tools
-
-        # Get response
-        response = client.messages.create(**request_params)
-
-        # Check if Claude wants to use a tool
-        if response.content and len(response.content) > 0:
-            for content_block in response.content:
-                if content_block.type == "tool_use":
-                    tool_name = content_block.name
-                    tool_input = content_block.input
-                    tool_id = content_block.id
-
-                    if tool_name == "deep_research":
-                        # Execute deep research
-                        research_result = execute_deep_research(**tool_input)
-
-                        # Create new messages with tool result
-                        new_messages = messages + [
-                            {"role": "assistant", "content": response.content},
-                            {
-                                "role": "user",
-                                "content": [
-                                    {
-                                        "type": "tool_result",
-                                        "tool_use_id": tool_id,
-                                        "content": json.dumps(research_result),
-                                    }
-                                ],
-                            },
-                        ]
-
-                        # Get final response with tool results
-                        final_response = client.messages.create(
-                            model="claude-3-5-sonnet-20241022",
-                            max_tokens=4000,
-                            messages=new_messages,
-                        )
-
-                        return (
-                            final_response.content[0].text
-                            if final_response.content
-                            else "No response generated."
-                        )
-
-        # Return regular response if no tools used
-        return (
-            response.content[0].text if response.content else "No response generated."
-        )
-
-    except Exception as e:
-        return f"❌ **Error:** {str(e)}"
-
-
-def stream_text_response(text: str, delay: float = 0.02) -> Generator[str, None, None]:
-    """Stream text character by character for typewriter effect."""
-    for char in text:
-        yield char
-        time.sleep(delay)
+        client_manager = ClientManager()
+        research_engine = ResearchEngine(client_manager)
+        chat_engine = ChatEngine(client_manager, research_engine)
+        return client_manager, research_engine, chat_engine
+    except ValueError as e:
+        st.error(f"Configuration error: {str(e)}")
+        st.error("Please set your API keys in the environment variables or .env file")
+        st.stop()
 
 
 def main():
@@ -177,38 +37,13 @@ def main():
         page_title="Claude 4 Deep Research Assistant", page_icon="🔍", layout="wide"
     )
 
-    # Custom CSS for better styling
+    # Initialize core components
+    client_manager, research_engine, chat_engine = get_core_components()
+
+    # Minimal CSS for footer only
     st.markdown(
         """
     <style>
-    .main-header {
-        text-align: center;
-        padding: 1rem 0;
-        border-bottom: 2px solid #f0f2f6;
-        margin-bottom: 2rem;
-    }
-    .user-message {
-        background-color: #e3f2fd;
-        padding: 1rem;
-        border-radius: 10px;
-        margin: 0.5rem 0;
-        border-left: 4px solid #2196f3;
-    }
-    .assistant-message {
-        background-color: #f3e5f5;
-        padding: 1rem;
-        border-radius: 10px;
-        margin: 0.5rem 0;
-        border-left: 4px solid #9c27b0;
-    }
-    .research-status {
-        background-color: #fff3e0;
-        padding: 1rem;
-        border-radius: 10px;
-        margin: 0.5rem 0;
-        border-left: 4px solid #ff9800;
-        font-style: italic;
-    }
     .footer {
         position: fixed;
         left: 0;
@@ -228,15 +63,8 @@ def main():
     )
 
     # Header
-    st.markdown(
-        """
-    <div class="main-header">
-        <h1>🔍 Claude 4 Deep Research Assistant</h1>
-        <p>AI Assistant with comprehensive web research capabilities powered by Firecrawl</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
+    st.title(APP_TITLE)
+    st.caption(APP_CAPTION)
 
     # Sidebar with controls
     with st.sidebar:
@@ -245,13 +73,25 @@ def main():
         # Research parameters
         st.subheader("Research Parameters")
         max_depth = st.slider(
-            "Research Depth", 1, 10, 5, help="Maximum number of research iterations"
+            "Research Depth",
+            1,
+            10,
+            DEFAULT_RESEARCH_DEPTH,
+            help="Maximum number of research iterations",
         )
         time_limit = st.slider(
-            "Time Limit (seconds)", 30, 300, 180, help="Maximum time for research"
+            "Time Limit (seconds)",
+            30,
+            300,
+            DEFAULT_TIME_LIMIT,
+            help="Maximum time for research",
         )
         max_urls = st.slider(
-            "Max URLs", 1, 100, 20, help="Maximum number of URLs to analyze"
+            "Max URLs",
+            1,
+            100,
+            DEFAULT_MAX_URLS,
+            help="Maximum number of URLs to analyze",
         )
 
         st.divider()
@@ -280,12 +120,9 @@ def main():
 
         # API Status
         st.subheader("🔧 API Status")
-        anthropic_key = (
-            "✅ Connected" if os.getenv("ANTHROPIC_API_KEY") else "❌ Missing"
-        )
-        firecrawl_key = (
-            "✅ Connected" if os.getenv("FIRECRAWL_API_KEY") else "❌ Missing"
-        )
+        api_status = client_manager.check_api_keys()
+        anthropic_key = "✅ Connected" if api_status["anthropic"] else "❌ Missing"
+        firecrawl_key = "✅ Connected" if api_status["firecrawl"] else "❌ Missing"
         st.write(f"Anthropic: {anthropic_key}")
         st.write(f"Firecrawl: {firecrawl_key}")
 
@@ -293,41 +130,14 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
         # Add welcome message
-        welcome_message = """👋 **Welcome to Claude 4 Deep Research Assistant!**
-
-I can help you with:
-- **General questions** and conversations
-- **Deep research** on any topic using web crawling and analysis
-- **Current information** and recent developments
-- **Comprehensive analysis** with source attribution
-
-What would you like to explore today?"""
         st.session_state.messages.append(
-            {"role": "assistant", "content": welcome_message}
+            {"role": "assistant", "content": WELCOME_MESSAGE}
         )
 
     # Display chat history
     for message in st.session_state.messages:
-        if message["role"] == "user":
-            st.markdown(
-                f"""
-            <div class="user-message">
-                <strong>You:</strong><br>
-                {message["content"]}
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                f"""
-            <div class="assistant-message">
-                <strong>Assistant:</strong><br>
-                {message["content"]}
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
     # Chat input
     user_input = st.chat_input("Ask me anything or request deep research on a topic...")
@@ -337,86 +147,52 @@ What would you like to explore today?"""
         st.session_state.messages.append({"role": "user", "content": user_input})
 
         # Display user message
-        st.markdown(
-            f"""
-        <div class="user-message">
-            <strong>You:</strong><br>
-            {user_input}
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
+        with st.chat_message("user"):
+            st.markdown(user_input)
 
         # Prepare messages for Claude
-        claude_messages = []
-        for msg in st.session_state.messages[
-            :-1
-        ]:  # Exclude the welcome message for Claude
-            if (
-                msg["role"] in ["user", "assistant"]
-                and msg.get("content") != st.session_state.messages[0]["content"]
-            ):
-                claude_messages.append({"role": msg["role"], "content": msg["content"]})
-
+        claude_messages = chat_engine.prepare_claude_messages(
+            st.session_state.messages[:-1], st.session_state.messages[0]["content"]
+        )
         # Add the current user message
         claude_messages.append({"role": "user", "content": user_input})
 
         # Show processing status
         with st.container():
-            st.markdown(
-                '<div class="research-status">🤔 <strong>Thinking...</strong></div>',
-                unsafe_allow_html=True,
-            )
+            st.info("🤔 **Thinking...**")
 
             # Check if this might be a research request
-            research_keywords = [
-                "research",
-                "analyze",
-                "study",
-                "investigate",
-                "explore",
-                "latest",
-                "current",
-                "trends",
-                "developments",
-            ]
-            might_need_research = any(
-                keyword in user_input.lower() for keyword in research_keywords
-            )
+            might_need_research = research_engine.is_research_request(user_input)
 
             if might_need_research:
-                st.markdown(
-                    '<div class="research-status">🔍 <strong>This looks like a research request. I may use deep research tools...</strong></div>',
-                    unsafe_allow_html=True,
+                st.info(
+                    "🔍 **This looks like a research request. I may use deep research tools...**"
                 )
 
             # Get response from Claude
             with st.spinner("Generating response..."):
-                response_text = get_claude_response_with_tools(
-                    claude_messages, [DEEP_RESEARCH_TOOL]
+                response_text = chat_engine.get_response_with_tools(
+                    claude_messages, [research_engine.get_tool_definition()]
                 )
 
             # Clear status messages
             st.empty()
 
-            # Stream the response
-            st.markdown(
-                '<div class="assistant-message"><strong>Assistant:</strong><br>',
-                unsafe_allow_html=True,
-            )
+            # Stream the response using chat message
+            with st.chat_message("assistant"):
+                # Create placeholder for streaming response
+                response_placeholder = st.empty()
+                full_response = ""
 
-            # Create placeholder for streaming response
-            response_placeholder = st.empty()
-            full_response = ""
+                # Stream the response with typewriter effect
+                for chunk in chat_engine.stream_text_response(
+                    response_text, delay=TYPEWRITER_DELAY
+                ):
+                    full_response += chunk
+                    response_placeholder.markdown(full_response + "▌")
 
-            # Stream the response with typewriter effect
-            for chunk in stream_text_response(response_text, delay=0.01):
-                full_response += chunk
-                response_placeholder.markdown(full_response + "▌")
-
-            # Final display without cursor
-            response_placeholder.markdown(full_response)
-            st.markdown("</div>", unsafe_allow_html=True)
+                # Final display without cursor
+                response_placeholder.markdown(full_response)
 
             # Add assistant response to session state
             st.session_state.messages.append(

@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from core import ClientManager, ResearchEngine, ChatEngine
 from config import (
     APP_TITLE,
-    APP_CAPTION,
     WELCOME_MESSAGE,
 )
 
@@ -58,8 +57,9 @@ def main():
     )
 
     # Header
-    st.title(APP_TITLE)
-    st.caption(APP_CAPTION)
+    st.markdown(
+        f"<h1 style='text-align: center;'>{APP_TITLE}</h1>", unsafe_allow_html=True
+    )
 
     # Sidebar with controls
     with st.sidebar:

@@ -2,15 +2,8 @@
 Configuration settings for Claude 4 Deep Research Assistant
 """
 
-# Model configuration
-CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
-MAX_TOKENS = 4000
-
 # UI configuration
-APP_TITLE = "🔍 Claude 4 Deep Research Assistant"
-APP_CAPTION = (
-    "AI Assistant with comprehensive web research capabilities powered by Firecrawl"
-)
+APP_TITLE = "🔍 Claude 4 Sonnet Deep Research Assistant Powered by 🔥Firecrawl"
 
 # Welcome message
 WELCOME_MESSAGE = """👋 **Welcome to Claude 4 Deep Research Assistant!**

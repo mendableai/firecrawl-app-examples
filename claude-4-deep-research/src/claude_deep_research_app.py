@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 from dotenv import load_dotenv
 from core import ClientManager, ResearchEngine, ChatEngine
 from config import (
@@ -159,17 +158,6 @@ def main():
         # Show processing status
         with st.container():
             st.info("🤔 **Thinking...**")
-
-            # Check if this might be a research request
-            might_need_research = research_engine.is_research_request(user_input)
-
-            if might_need_research:
-                st.info(
-                    "🔍 **This looks like a research request. I may use deep research tools...**"
-                )
-
-            # Clear status messages
-            st.empty()
 
             # Stream the response using chat message
             with st.chat_message("assistant"):

@@ -3,8 +3,7 @@ Chat functionality and Claude interactions
 """
 
 import json
-import time
-from typing import Dict, Any, List, Generator
+from typing import Dict, List
 from .clients import ClientManager
 from .research import ResearchEngine
 

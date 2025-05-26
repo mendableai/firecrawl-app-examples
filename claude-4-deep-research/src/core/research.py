@@ -2,7 +2,6 @@
 Deep research functionality using Firecrawl
 """
 
-import json
 from typing import Dict, Any
 from .clients import ClientManager
 
@@ -73,18 +72,3 @@ class ResearchEngine:
 
         except Exception as e:
             return {"success": False, "error": str(e), "query": query}
-
-    def is_research_request(self, user_input: str) -> bool:
-        """Check if user input looks like a research request."""
-        research_keywords = [
-            "research",
-            "analyze",
-            "study",
-            "investigate",
-            "explore",
-            "latest",
-            "current",
-            "trends",
-            "developments",
-        ]
-        return any(keyword in user_input.lower() for keyword in research_keywords)

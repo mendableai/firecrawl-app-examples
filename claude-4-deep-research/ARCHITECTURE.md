@@ -24,7 +24,7 @@ src/
 - **Contains**:
   - Streamlit components and layout
   - User input handling
-  - Display logic
+  - Display logic (including chat interface, research results, and API key status indicators)
   - Session state management
 
 ### 2. Business Logic Layer (`core/`)
@@ -136,16 +136,5 @@ The architecture supports easy addition of:
 4. **Authentication**: User management and API key handling
 5. **Analytics**: Usage tracking and metrics
 6. **Plugin System**: Extensible tool framework
-
-## Testing Strategy
-
-```python
-# Example test structure
-tests/
-├── test_clients.py      # Test API client management
-├── test_research.py     # Test research functionality
-├── test_chat.py         # Test chat interactions
-└── test_integration.py  # Test component integration
-```
 
 This architecture ensures the application remains maintainable, testable, and extensible as it grows in complexity.

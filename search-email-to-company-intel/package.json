@@ -1,0 +1,21 @@
+{
+  "name": "email-to-company-intel",
+  "version": "1.0.0",
+  "description": "LangGraph-based company intelligence gathering from email addresses using Firecrawl",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@mendable/firecrawl-js": "^1.8.0",
+    "@langchain/langgraph": "^0.2.0",
+    "openai": "^4.73.0",
+    "dotenv": "^16.4.7",
+    "chalk": "^5.3.0",
+    "ora": "^8.1.1",
+    "marked": "^14.1.4"
+  },
+  "author": "",
+  "license": "MIT"
+}

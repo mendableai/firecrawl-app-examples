@@ -1,0 +1,22 @@
+{
+  "name": "search-competitor-analysis",
+  "version": "1.0.0",
+  "description": "AI-powered competitor analysis using LangGraph and Firecrawl",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/langgraph": "^0.0.20",
+    "@langchain/openai": "^0.0.30",
+    "@mendable/firecrawl-js": "^1.8.5",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.3.1",
+    "marked": "^15.0.12",
+    "ora": "^8.0.1",
+    "zod": "^3.22.4"
+  }
+}

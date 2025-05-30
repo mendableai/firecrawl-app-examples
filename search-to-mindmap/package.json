@@ -1,0 +1,15 @@
+{
+  "name": "search-to-mindmap",
+  "version": "1.0.0",
+  "description": "Create interactive mind maps from search results",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "NODE_NO_WARNINGS=1 node index.js"
+  },
+  "dependencies": {
+    "@mendable/firecrawl-js": "^1.8.1",
+    "openai": "^4.77.0",
+    "dotenv": "^16.4.7"
+  }
+}

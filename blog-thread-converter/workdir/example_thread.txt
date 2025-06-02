@@ -1,0 +1,88 @@
+Tweet 1: 
+We built an AI interview prep using @firecrawl_dev and DeepSeek-R1👇
+
+----------
+
+Tweet 2:
+Here's an architectural overview of the Interview Q&A Generator:
+
+The app takes a company URL + role, maps all pages using Firecrawl's map endpoint, filters useful ones via an LLM, scrapes them, and uses @crewAIInc agents to generate Q&As.
+----------
+
+Tweet 3:
+Step 0/9: Get the API key
+
+First, grab your API key from @firecrawl_dev and drop it into a .env file.
+
+That’s all you need to start scraping any topic from the web.
+
+----------
+
+Tweet 4:
+Step 1/9: Map company URLs
+
+Use the map endpoint to get all of the company's website URLs:
+----------
+
+Tweet 5:
+Step 2/9: Filter relevant pages with an LLM
+
+Once all the URLs are collected, use an LLM call to filter out irrelevant ones and retain only those related to interview prep based on the given role to return a structured list of URLs ready for scraping.
+
+Here is the code:
+----------
+
+Tweet 6:
+Step 3/9:  Scrape data
+
+For the next step, use Firecrawl’s /batch_scrape endpoint to extract interview prep content from the filtered URLs.
+
+This endpoint scrapes multiple pages simultaneously and returns clean markdown suitable for LLM processing
+----------
+
+Tweet 7:
+Step 4/9: Setup the LLM
+
+Next, we set up DeepSeek-R1 LLM, served locally via ollama.
+----------
+
+Tweet 8:
+Step 5/9: Define Interview Analysis Agent
+
+This agent specializes in analyzing scraped content to identify key skills and preparation strategies for a specific role.
+
+It’s given a role, goal, backstory, and a detailed task with its expected output.
+----------
+
+Tweet 9:
+Step 6/9: Define Question Answer Writer Agent
+
+This agent generates relevant interview Q&A using the analysis produced by the first agent.
+
+Its role, backstory, and task description are tightly scoped to output a structured Pydantic object.
+
+Here's how it looks in the code:
+----------
+
+Tweet 10:
+Step 7/9: Create a Flow
+
+For the final step, use CrewAI Flows to orchestrate the full interview prep flow, starting with mapping company URLs, filtering them with an LLM, scraping the content, and passing it to the Interview Crew to generate tailored Q&A.
+
+Check it out:
+----------
+
+Tweet 11:
+Step 8/9: Kickoff and results
+
+This is the generated list of interview Q&As using CrewAI Flow
+----------
+
+Tweet 12:
+Step 9/9: Streamlit UI
+
+A multi-agent Interview Q&A generator using Firecrawl & CrewAI running smoothly on your local machine, wrapped in a @streamlit interface.
+
+Here is the multi-agent Interview Q&A generator in action again!
+
+

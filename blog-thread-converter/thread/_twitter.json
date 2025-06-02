@@ -1,0 +1,41 @@
+{
+  "topic": "A technical overview of [System]: Twitter Thread Planner",
+  "tweets": [
+    {
+      "content": "Introducing the ultimate tool for Twitter thread planning! Break down complex tech concepts into digestible chunks. Follow our style guide to create engaging threads that drive results!",
+      "is_hook": true,
+      "media_urls": null
+    },
+    {
+      "content": "Key takeaways for engineering audiences: keep it concise, accessible, and informative.",
+      "is_hook": false,
+      "media_urls": null
+    },
+    {
+      "content": "A strong hook tweet that captures attention! Stay tuned for the next part of our thread on creating engaging Twitter threads.",
+      "is_hook": true,
+      "media_urls": [
+        "https://example.com/image1.jpg",
+        "https://example.com/image2.jpg"
+      ]
+    },
+    {
+      "content": "Code snippets and key technical highlights that fit Twitter's format are a must!",
+      "is_hook": false,
+      "media_urls": null
+    },
+    {
+      "content": "Real-world applications or benefits of creating effective Twitter threads.",
+      "is_hook": true,
+      "media_urls": [
+        "https://example.com/image3.jpg",
+        "https://example.com/image4.jpg"
+      ]
+    },
+    {
+      "content": "Call to action: start creating your own Twitter threads today!",
+      "is_hook": false,
+      "media_urls": null
+    }
+  ]
+}

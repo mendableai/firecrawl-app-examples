@@ -1,0 +1,13 @@
+analyze_content_task:
+  description: Analyze the scraped content below and understand the content and the keywords that are being used for SEO. The content comes from top-ranked webpages
+               when someone searches for the {topic} on Google. The content is {scraped_content}.
+  expected_output: A detailed analysis of the content's SEO potential, including key elements and patterns. The output should highlight the keywords that are most relevant to the content.
+  agent: content_analyzer_agent
+
+generate_seo_report_task:
+  description: Generate SEO keywords and recommendations based on the content analysis
+  expected_output: A comprehensive SEO report with high-priority keywords, low-priority keywords and long-tail keywords. 
+                   The output should highlight the keywords that are most relevant to the content and have helped the article rank higher on Google.
+                   Do not include any other text in the output like Heading recommendations, formatting recommendations, backlinks recommendations, etc.
+                   Just focus on the keywords.
+  agent: seo_agent

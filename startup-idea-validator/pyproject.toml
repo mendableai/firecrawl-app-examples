@@ -1,0 +1,15 @@
+[project]
+name = "startup-idea-validator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "firecrawl-py>=2.8.0",
+    "ipykernel>=6.29.5",
+    "langchain>=0.3.25",
+    "langchain-openai>=0.3.22",
+    "langgraph>=0.4.8",
+    "langgraph-supervisor>=0.0.27",
+    "streamlit>=1.45.1",
+]

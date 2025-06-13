@@ -1,0 +1,6 @@
+langchain==0.3.16
+langgraph==0.2.54
+langchain-openai==0.2.12
+firecrawl-py==1.7.4
+python-dotenv==1.0.1
+requests==2.32.3
